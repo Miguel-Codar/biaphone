@@ -1,16 +1,12 @@
 version: "3.9"
 
-# ─── Para duplicar para um novo cliente ────────────────────────────────────────
-# 1. Copie esta pasta inteira com outro nome (ex: clienteX/)
-# 2. Edite o .env com as credenciais do novo cliente
-# 3. Mude `container_name` e a porta host abaixo (ex: "8001:8000")
-# 4. Execute: docker compose up -d --build
-# ──────────────────────────────────────────────────────────────────────────────
-
 services:
+
+  # ── Bot do primeiro cliente (topphone) ─────────────────────
   topphone:
     build: .
-    container_name: topphone_bot
+    image: biaphone:latest        # imagem compartilhada com todos os clientes
+    container_name: biaphone_topphone
     restart: unless-stopped
     ports:
       - "8000:8000"
@@ -21,3 +17,22 @@ services:
       - DATABASE_URL=sqlite:////app/data/topphone.db
     env_file:
       - .env
+
+  # ── Painel de Administração ─────────────────────────────────
+  admin:
+    build: ./admin
+    container_name: biaphone_admin
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock   # gerencia containers
+      - ./clients:/clients                           # dados e registro dos clientes
+      - .:/bot_source                                # código-fonte para rebuild
+    env_file:
+      - .env
+    environment:
+      - CLIENTS_DIR=/clients
+      - BOT_IMAGE=biaphone:latest
+      - BOT_SOURCE_DIR=/bot_source
+      - BASE_PORT=8000

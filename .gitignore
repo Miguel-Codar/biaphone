@@ -5,6 +5,10 @@
 data/
 *.db
 
+# Dados dos clientes (credenciais e banco por cliente)
+clients/*/.env
+clients/*/data/
+
 # Python
 __pycache__/
 *.pyc

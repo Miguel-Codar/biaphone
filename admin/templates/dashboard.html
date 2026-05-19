@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Biaphone — Admin</title>
+<style>
+  :root {
+    --preto: #111; --vermelho: #E02020; --vd: #B01818;
+    --branco: #FFF; --bg: #F4F4F4; --borda: #E0E0E0;
+    --cinza: #555; --verde: #1D9E75; --vbg: #E6F8F2;
+    --azul: #1A6FB5; --amarelo: #D4860A;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--preto); }
+
+  header { background: var(--preto); height: 56px; padding: 0 2rem; display: flex; align-items: center; gap: 1rem; }
+  .logo { color: var(--vermelho); font-weight: 900; font-size: 1.15rem; letter-spacing: 2px; text-transform: uppercase; margin-right: auto; }
+  .h-btn { border: none; border-radius: 6px; padding: .45rem 1rem; font-size: .82rem; font-weight: 700; cursor: pointer; transition: all .15s; }
+  .h-btn-red   { background: var(--vermelho); color: var(--branco); }
+  .h-btn-red:hover { background: var(--vd); }
+  .h-btn-gray  { background: #333; color: #CCC; }
+  .h-btn-gray:hover { background: #444; color: var(--branco); }
+
+  main { max-width: 1200px; margin: 2rem auto; padding: 0 1.5rem 4rem; }
+
+  .stats { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+  .stat { background: var(--branco); border: 1px solid var(--borda); border-radius: 10px; padding: 1rem 1.5rem; }
+  .stat .n { font-size: 2rem; font-weight: 800; line-height: 1; }
+  .stat .l { font-size: .72rem; color: var(--cinza); text-transform: uppercase; letter-spacing: .05em; margin-top: 3px; }
+  .stat.verde .n { color: var(--verde); }
+  .stat.vermelho .n { color: var(--vermelho); }
+
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+  .section-title { font-size: 1rem; font-weight: 700; }
+  .btn-new { background: var(--vermelho); color: var(--branco); border: none; padding: .6rem 1.4rem; border-radius: 7px; font-size: .875rem; font-weight: 700; cursor: pointer; transition: background .15s; }
+  .btn-new:hover { background: var(--vd); }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.25rem; }
+  .card { background: var(--branco); border: 1px solid var(--borda); border-radius: 12px; padding: 1.4rem; display: flex; flex-direction: column; gap: .75rem; }
+  .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: .5rem; }
+  .card-name { font-size: 1rem; font-weight: 700; }
+  .card-slug { font-size: .78rem; color: var(--cinza); }
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: .72rem; font-weight: 700; }
+  .badge-running    { background: var(--vbg); color: var(--verde); }
+  .badge-stopped    { background: #FFF0F0; color: var(--vermelho); }
+  .badge-exited     { background: #FFF0F0; color: var(--vermelho); }
+  .badge-not_found  { background: #F4F4F4; color: #AAA; }
+  .badge-error      { background: #FFF0F0; color: var(--amarelo); }
+  .card-url { font-size: .8rem; }
+  .card-url a { color: var(--azul); text-decoration: none; font-family: monospace; }
+  .card-url a:hover { text-decoration: underline; }
+  .card-meta { font-size: .75rem; color: var(--cinza); }
+  .card-actions { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .25rem; }
+  .act { border-radius: 6px; padding: .4rem .85rem; font-size: .8rem; font-weight: 600; cursor: pointer; border: 1px solid var(--borda); background: var(--branco); transition: all .15s; }
+  .act:hover { border-color: #999; }
+  .act-red  { border-color: #FFCDD2; color: var(--vermelho); }
+  .act-red:hover  { background: #FFF0F0; }
+  .act-blue { border-color: #B3D4F5; color: var(--azul); }
+  .act-blue:hover { background: #EEF6FF; }
+  .act-grn  { border-color: #9FE1CB; color: var(--verde); }
+  .act-grn:hover  { background: var(--vbg); }
+
+  .empty { text-align: center; padding: 4rem; color: var(--cinza); grid-column: 1 / -1; }
+
+  .alert { border-radius: 8px; padding: .75rem 1rem; margin-bottom: 1.5rem; font-size: .9rem; }
+  .alert-ok { background: var(--vbg); border: 1px solid #9FE1CB; color: #0D5E3F; }
+
+  /* Modal */
+  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 50; justify-content: center; align-items: flex-start; padding: 2rem 1rem; overflow-y: auto; }
+  .overlay.open { display: flex; }
+  .modal { background: var(--branco); border-radius: 14px; padding: 2rem; width: 100%; max-width: 560px; position: relative; margin: auto; }
+  .modal h2 { font-size: 1.05rem; margin-bottom: 1.4rem; }
+  .close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.3rem; cursor: pointer; color: var(--cinza); }
+  .field { margin-bottom: 1rem; }
+  .field label { display: block; font-size: .75rem; color: var(--cinza); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 4px; }
+  .field input, .field select { width: 100%; padding: .55rem .75rem; border: 1px solid var(--borda); border-radius: 6px; font-size: .9rem; font-family: inherit; }
+  .field input:focus, .field select:focus { outline: none; border-color: var(--vermelho); }
+  .field .hint { font-size: .75rem; color: var(--cinza); margin-top: 3px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+  .modal-footer { display: flex; justify-content: flex-end; gap: .75rem; margin-top: 1.5rem; }
+  .btn-cancel { background: var(--branco); border: 1px solid var(--borda); color: var(--preto); padding: .6rem 1.2rem; border-radius: 6px; font-size: .875rem; cursor: pointer; }
+  .btn-save   { background: var(--vermelho); color: var(--branco); border: none; padding: .6rem 1.4rem; border-radius: 6px; font-size: .875rem; font-weight: 700; cursor: pointer; }
+  .btn-save:hover { background: var(--vd); }
+
+  /* Logs modal */
+  .logs-body { background: #111; color: #4ADE80; font-family: monospace; font-size: .78rem; border-radius: 6px; padding: 1rem; min-height: 200px; max-height: 400px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; margin-top: .5rem; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Biaphone Admin</div>
+  <button class="h-btn h-btn-gray" onclick="rebuildRestart(this)">🔄 Rebuild + Reiniciar Todos</button>
+  <a href="/logout" style="text-decoration:none;"><button class="h-btn h-btn-gray">Sair</button></a>
+</header>
+
+<main>
+
+  {% if created %}
+  <div class="alert alert-ok">✅ Cliente criado e container iniciado com sucesso!</div>
+  {% endif %}
+
+  <div class="stats">
+    <div class="stat vermelho"><div class="n">{{ total }}</div><div class="l">Total de Clientes</div></div>
+    <div class="stat verde"><div class="n">{{ running }}</div><div class="l">Rodando</div></div>
+  </div>
+
+  <div class="section-header">
+    <div class="section-title">Clientes</div>
+    <button class="btn-new" onclick="document.getElementById('modalNew').classList.add('open')">➕ Novo Cliente</button>
+  </div>
+
+  <div class="grid">
+    {% if clients %}
+      {% for c in clients %}
+      <div class="card" id="card-{{ c.name }}">
+        <div class="card-top">
+          <div>
+            <div class="card-name">{{ c.store_name }}</div>
+            <div class="card-slug">{{ c.name }}</div>
+          </div>
+          <span class="badge badge-{{ c.status }}">
+            {% if c.status == 'running' %}● Rodando
+            {% elif c.status == 'not_found' %}Não encontrado
+            {% else %}■ {{ c.status }}{% endif %}
+          </span>
+        </div>
+
+        <div class="card-url">
+          🌐 <a href="#" id="url-{{ c.name }}" target="_blank">
+            <span class="port-{{ c.name }}">:{{ c.port }}</span>
+          </a>
+        </div>
+
+        <div class="card-meta">
+          Porta {{ c.port }} · Criado {{ c.created_at[:10] if c.created_at else '—' }}
+        </div>
+
+        <div class="card-actions">
+          <button class="act act-blue" onclick="openPanel('{{ c.name }}', {{ c.port }})">🔗 Painel</button>
+          <button class="act act-grn"  onclick="restartClient('{{ c.name }}', this)">↺ Reiniciar</button>
+          {% if c.status == 'running' %}
+          <button class="act" onclick="stopClient('{{ c.name }}', this)">⏹ Parar</button>
+          {% else %}
+          <button class="act act-grn" onclick="startClient('{{ c.name }}', this)">▶ Iniciar</button>
+          {% endif %}
+          <button class="act" onclick="showLogs('{{ c.name }}')">📋 Logs</button>
+          <button class="act act-red" onclick="deleteClient('{{ c.name }}', this)">🗑 Excluir</button>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty">
+        <div style="font-size:2.5rem;margin-bottom:.75rem">🤖</div>
+        Nenhum cliente ainda. Clique em <strong>Novo Cliente</strong> para começar.
+      </div>
+    {% endif %}
+  </div>
+
+</main>
+
+<!-- ─── Modal: Novo Cliente ───────────────────────────────── -->
+<div class="overlay" id="modalNew">
+  <div class="modal">
+    <button class="close" onclick="document.getElementById('modalNew').classList.remove('open')">×</button>
+    <h2>➕ Novo Cliente</h2>
+
+    <form method="POST" action="/clients/new">
+      <div class="row2">
+        <div class="field">
+          <label>Slug (ID único)</label>
+          <input type="text" name="name" placeholder="ex: topphone2" required pattern="[a-z0-9_-]+" title="Apenas letras minúsculas, números e hífens">
+          <div class="hint">Identificador interno — sem espaços</div>
+        </div>
+        <div class="field">
+          <label>Porta</label>
+          <input type="number" name="port" value="{{ next_port }}" min="1024" max="65535" required>
+          <div class="hint">Porta que o bot vai usar na VPS</div>
+        </div>
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <label>Nome da Loja</label>
+          <input type="text" name="store_name" placeholder="Top Phone" required>
+        </div>
+        <div class="field">
+          <label>Endereço</label>
+          <input type="text" name="store_address" placeholder="Rua Ex., 123 — Cidade-UF">
+        </div>
+      </div>
+
+      <div class="field" style="border-top:1px solid var(--borda);padding-top:1rem;margin-top:.5rem;">
+        <label>Evolution API — URL do servidor</label>
+        <input type="text" name="evolution_host" placeholder="http://IP:8080" required>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>API Key</label>
+          <input type="text" name="evolution_api_key" placeholder="sua-api-key" required>
+        </div>
+        <div class="field">
+          <label>Nome da instância</label>
+          <input type="text" name="evolution_instance" placeholder="nome-instancia" required>
+        </div>
+      </div>
+
+      <div class="field" style="border-top:1px solid var(--borda);padding-top:1rem;margin-top:.5rem;">
+        <label>Groq API Key</label>
+        <input type="text" name="groq_api_key" placeholder="gsk_..." required>
+      </div>
+
+      <div class="field">
+        <label>Número do Atendente</label>
+        <input type="text" name="atendente_number" placeholder="5581999999999">
+        <div class="hint">DDI + DDD + número (sem espaços ou símbolos)</div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" onclick="document.getElementById('modalNew').classList.remove('open')">Cancelar</button>
+        <button type="submit" class="btn-save">🚀 Criar e Iniciar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ─── Modal: Logs ──────────────────────────────────────── -->
+<div class="overlay" id="modalLogs">
+  <div class="modal" style="max-width:700px;">
+    <button class="close" onclick="document.getElementById('modalLogs').classList.remove('open')">×</button>
+    <h2>📋 Logs — <span id="logsClientName"></span></h2>
+    <div class="logs-body" id="logsContent">Carregando...</div>
+  </div>
+</div>
+
+<script>
+// Constrói URLs dos clientes com o IP atual
+const HOST = window.location.hostname;
+document.querySelectorAll('[id^="url-"]').forEach(a => {
+  const portEl = a.querySelector('[class^="port-"]');
+  if (portEl) {
+    const port = portEl.textContent.replace(':', '');
+    a.href = `http://${HOST}:${port}/config`;
+    a.textContent = `http://${HOST}:${port}`;
+  }
+});
+
+function openPanel(name, port) {
+  window.open(`http://${HOST}:${port}/config`, '_blank');
+}
+
+async function apiCall(url, method = 'POST') {
+  const r = await fetch(url, { method });
+  const d = await r.json();
+  if (!r.ok) throw new Error(d.detail || JSON.stringify(d));
+  return d;
+}
+
+function toast(msg, ok = true) {
+  const t = document.createElement('div');
+  t.textContent = msg;
+  Object.assign(t.style, {
+    position: 'fixed', bottom: '1.5rem', right: '1.5rem',
+    background: ok ? '#1D9E75' : '#E02020', color: '#FFF',
+    padding: '.75rem 1.2rem', borderRadius: '8px',
+    fontFamily: 'Segoe UI, Arial, sans-serif', fontSize: '.9rem',
+    fontWeight: '600', zIndex: '9999', boxShadow: '0 4px 20px rgba(0,0,0,.25)',
+  });
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+async function restartClient(name, btn) {
+  const orig = btn.textContent;
+  btn.textContent = '⏳'; btn.disabled = true;
+  try {
+    await apiCall(`/clients/${name}/restart`);
+    toast(`${name} reiniciado!`);
+  } catch(e) { toast(`Erro: ${e.message}`, false); }
+  finally { btn.textContent = orig; btn.disabled = false; }
+}
+
+async function stopClient(name, btn) {
+  if (!confirm(`Parar o bot "${name}"?`)) return;
+  const orig = btn.textContent;
+  btn.textContent = '⏳'; btn.disabled = true;
+  try {
+    await apiCall(`/clients/${name}/stop`);
+    toast(`${name} parado.`);
+    setTimeout(() => location.reload(), 1500);
+  } catch(e) { toast(`Erro: ${e.message}`, false); btn.textContent = orig; btn.disabled = false; }
+}
+
+async function startClient(name, btn) {
+  const orig = btn.textContent;
+  btn.textContent = '⏳'; btn.disabled = true;
+  try {
+    await apiCall(`/clients/${name}/start`);
+    toast(`${name} iniciado!`);
+    setTimeout(() => location.reload(), 1500);
+  } catch(e) { toast(`Erro: ${e.message}`, false); btn.textContent = orig; btn.disabled = false; }
+}
+
+async function deleteClient(name, btn) {
+  if (!confirm(`Excluir o cliente "${name}"?\n\nO container será removido. Os arquivos de dados no diretório clients/${name}/ NÃO serão apagados.`)) return;
+  btn.disabled = true;
+  try {
+    await apiCall(`/clients/${name}`, 'DELETE');
+    document.getElementById(`card-${name}`)?.remove();
+    toast(`${name} removido.`);
+  } catch(e) { toast(`Erro: ${e.message}`, false); btn.disabled = false; }
+}
+
+async function showLogs(name) {
+  document.getElementById('logsClientName').textContent = name;
+  document.getElementById('logsContent').textContent = 'Carregando...';
+  document.getElementById('modalLogs').classList.add('open');
+  try {
+    const d = await fetch(`/clients/${name}/logs`).then(r => r.json());
+    document.getElementById('logsContent').textContent = d.logs || '(sem logs)';
+    const box = document.getElementById('logsContent');
+    box.scrollTop = box.scrollHeight;
+  } catch(e) {
+    document.getElementById('logsContent').textContent = `Erro: ${e.message}`;
+  }
+}
+
+async function rebuildRestart(btn) {
+  if (!confirm('Isso vai rebuildar a imagem Docker e reiniciar TODOS os bots.\n\nContinuar?')) return;
+  const orig = btn.textContent;
+  btn.textContent = '⏳ Rebuilding...'; btn.disabled = true;
+  try {
+    const d = await apiCall('/rebuild-restart');
+    toast(`✅ Build OK! ${d.restarted?.length || 0} containers reiniciados.`);
+  } catch(e) { toast(`Erro: ${e.message}`, false); }
+  finally { btn.textContent = orig; btn.disabled = false; }
+}
+
+// Fecha modais clicando fora
+document.querySelectorAll('.overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+});
+</script>
+</body>
+</html>

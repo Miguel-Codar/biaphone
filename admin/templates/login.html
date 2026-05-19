@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Login</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #111; display: flex; align-items: center; justify-content: center; min-height: 100vh; font-family: 'Segoe UI', Arial, sans-serif; }
+  .card { background: #FFF; border-radius: 14px; padding: 2.5rem 2rem; width: 100%; max-width: 360px; box-shadow: 0 20px 60px rgba(0,0,0,.4); }
+  .logo { color: #E02020; font-weight: 900; font-size: 1.4rem; letter-spacing: 2px; text-transform: uppercase; margin-bottom: .3rem; }
+  .sub  { color: #888; font-size: .875rem; margin-bottom: 2rem; }
+  label { display: block; font-size: .75rem; color: #555; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 5px; }
+  input { width: 100%; padding: .65rem .8rem; border: 1px solid #DDD; border-radius: 7px; font-size: .95rem; transition: border-color .15s; }
+  input:focus { outline: none; border-color: #E02020; }
+  .field { margin-bottom: 1.25rem; }
+  .btn { width: 100%; background: #E02020; color: #FFF; border: none; padding: .78rem; border-radius: 7px; font-size: .95rem; font-weight: 700; cursor: pointer; transition: background .15s; }
+  .btn:hover { background: #B01818; }
+  .error { background: #FFF0F0; color: #B01818; border: 1px solid #FFB3B3; border-radius: 7px; padding: .65rem .85rem; font-size: .85rem; margin-bottom: 1.1rem; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">Biaphone</div>
+  <div class="sub">Painel de Administração</div>
+  {% if error %}<div class="error">{{ error }}</div>{% endif %}
+  <form method="POST" action="/login">
+    <div class="field">
+      <label>Senha</label>
+      <input type="password" name="password" autofocus placeholder="••••••••" autocomplete="current-password">
+    </div>
+    <button type="submit" class="btn">Entrar</button>
+  </form>
+</div>
+</body>
+</html>
