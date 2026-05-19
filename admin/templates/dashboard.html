@@ -6,109 +6,122 @@
 <title>Biaphone — Admin</title>
 <style>
   :root {
-    --preto: #111; --vermelho: #E02020; --vd: #B01818;
-    --branco: #FFF; --bg: #F4F4F4; --borda: #E0E0E0;
-    --cinza: #555; --verde: #1D9E75; --vbg: #E6F8F2;
-    --azul: #1A6FB5; --amarelo: #D4860A;
+    --preto:#111; --verm:#E02020; --vd:#B01818;
+    --branco:#FFF; --bg:#F4F4F4; --borda:#E0E0E0;
+    --cinza:#555; --verde:#1D9E75; --vbg:#E6F8F2;
+    --azul:#1A6FB5; --amarelo:#D4860A;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--preto); }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--preto);}
 
-  header { background: var(--preto); height: 56px; padding: 0 2rem; display: flex; align-items: center; gap: 1rem; }
-  .logo { color: var(--vermelho); font-weight: 900; font-size: 1.15rem; letter-spacing: 2px; text-transform: uppercase; margin-right: auto; }
-  .h-btn { border: none; border-radius: 6px; padding: .45rem 1rem; font-size: .82rem; font-weight: 700; cursor: pointer; transition: all .15s; }
-  .h-btn-red   { background: var(--vermelho); color: var(--branco); }
-  .h-btn-red:hover { background: var(--vd); }
-  .h-btn-gray  { background: #333; color: #CCC; }
-  .h-btn-gray:hover { background: #444; color: var(--branco); }
+  header{background:var(--preto);height:56px;padding:0 2rem;display:flex;align-items:center;gap:.75rem;}
+  .logo{color:var(--verm);font-weight:900;font-size:1.15rem;letter-spacing:2px;text-transform:uppercase;margin-right:auto;}
+  .hbtn{border:none;border-radius:6px;padding:.45rem 1rem;font-size:.82rem;font-weight:700;cursor:pointer;transition:all .15s;}
+  .hbtn-r{background:var(--verm);color:#FFF;} .hbtn-r:hover{background:var(--vd);}
+  .hbtn-g{background:#333;color:#CCC;}       .hbtn-g:hover{background:#444;color:#FFF;}
 
-  main { max-width: 1200px; margin: 2rem auto; padding: 0 1.5rem 4rem; }
+  main{max-width:1200px;margin:2rem auto;padding:0 1.5rem 4rem;}
 
-  .stats { display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
-  .stat { background: var(--branco); border: 1px solid var(--borda); border-radius: 10px; padding: 1rem 1.5rem; }
-  .stat .n { font-size: 2rem; font-weight: 800; line-height: 1; }
-  .stat .l { font-size: .72rem; color: var(--cinza); text-transform: uppercase; letter-spacing: .05em; margin-top: 3px; }
-  .stat.verde .n { color: var(--verde); }
-  .stat.vermelho .n { color: var(--vermelho); }
+  .alert{border-radius:8px;padding:.75rem 1rem;margin-bottom:1.5rem;font-size:.875rem;}
+  .alert-warn{background:#FFF8E6;border:1px solid #F5D78A;color:#7A5200;}
+  .alert-ok  {background:var(--vbg);border:1px solid #9FE1CB;color:#0D5E3F;}
 
-  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
-  .section-title { font-size: 1rem; font-weight: 700; }
-  .btn-new { background: var(--vermelho); color: var(--branco); border: none; padding: .6rem 1.4rem; border-radius: 7px; font-size: .875rem; font-weight: 700; cursor: pointer; transition: background .15s; }
-  .btn-new:hover { background: var(--vd); }
+  .stats{display:flex;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap;}
+  .stat{background:#FFF;border:1px solid var(--borda);border-radius:10px;padding:1rem 1.5rem;}
+  .stat .n{font-size:2rem;font-weight:800;line-height:1;}
+  .stat .l{font-size:.72rem;color:var(--cinza);text-transform:uppercase;letter-spacing:.05em;margin-top:3px;}
+  .stat.v .n{color:var(--verde);} .stat.r .n{color:var(--verm);}
 
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.25rem; }
-  .card { background: var(--branco); border: 1px solid var(--borda); border-radius: 12px; padding: 1.4rem; display: flex; flex-direction: column; gap: .75rem; }
-  .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: .5rem; }
-  .card-name { font-size: 1rem; font-weight: 700; }
-  .card-slug { font-size: .78rem; color: var(--cinza); }
-  .badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: .72rem; font-weight: 700; }
-  .badge-running    { background: var(--vbg); color: var(--verde); }
-  .badge-stopped    { background: #FFF0F0; color: var(--vermelho); }
-  .badge-exited     { background: #FFF0F0; color: var(--vermelho); }
-  .badge-not_found  { background: #F4F4F4; color: #AAA; }
-  .badge-error      { background: #FFF0F0; color: var(--amarelo); }
-  .card-url { font-size: .8rem; }
-  .card-url a { color: var(--azul); text-decoration: none; font-family: monospace; }
-  .card-url a:hover { text-decoration: underline; }
-  .card-meta { font-size: .75rem; color: var(--cinza); }
-  .card-actions { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .25rem; }
-  .act { border-radius: 6px; padding: .4rem .85rem; font-size: .8rem; font-weight: 600; cursor: pointer; border: 1px solid var(--borda); background: var(--branco); transition: all .15s; }
-  .act:hover { border-color: #999; }
-  .act-red  { border-color: #FFCDD2; color: var(--vermelho); }
-  .act-red:hover  { background: #FFF0F0; }
-  .act-blue { border-color: #B3D4F5; color: var(--azul); }
-  .act-blue:hover { background: #EEF6FF; }
-  .act-grn  { border-color: #9FE1CB; color: var(--verde); }
-  .act-grn:hover  { background: var(--vbg); }
+  .sec-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
+  .sec-title{font-size:1rem;font-weight:700;}
+  .btn-new{background:var(--verm);color:#FFF;border:none;padding:.6rem 1.4rem;border-radius:7px;font-size:.875rem;font-weight:700;cursor:pointer;transition:background .15s;}
+  .btn-new:hover{background:var(--vd);}
 
-  .empty { text-align: center; padding: 4rem; color: var(--cinza); grid-column: 1 / -1; }
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1.25rem;}
+  .card{background:#FFF;border:1px solid var(--borda);border-radius:12px;padding:1.4rem;display:flex;flex-direction:column;gap:.7rem;}
+  .card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:.5rem;}
+  .card-name{font-size:1rem;font-weight:700;}
+  .card-slug{font-size:.75rem;color:var(--cinza);}
+  .badge{display:inline-block;padding:2px 10px;border-radius:20px;font-size:.72rem;font-weight:700;}
+  .b-running{background:var(--vbg);color:var(--verde);}
+  .b-stopped,.b-exited{background:#FFF0F0;color:var(--verm);}
+  .b-not_found{background:#F4F4F4;color:#AAA;}
+  .b-error{background:#FFF8E6;color:var(--amarelo);}
+  .card-url a{font-size:.8rem;color:var(--azul);text-decoration:none;font-family:monospace;}
+  .card-url a:hover{text-decoration:underline;}
+  .card-meta{font-size:.75rem;color:var(--cinza);}
+  .acts{display:flex;gap:.45rem;flex-wrap:wrap;margin-top:.2rem;}
+  .act{border-radius:6px;padding:.38rem .8rem;font-size:.78rem;font-weight:600;cursor:pointer;border:1px solid var(--borda);background:#FFF;transition:all .15s;}
+  .act:hover{border-color:#999;}
+  .act-r{border-color:#FFCDD2;color:var(--verm);} .act-r:hover{background:#FFF0F0;}
+  .act-b{border-color:#B3D4F5;color:var(--azul);} .act-b:hover{background:#EEF6FF;}
+  .act-g{border-color:#9FE1CB;color:var(--verde);}.act-g:hover{background:var(--vbg);}
 
-  .alert { border-radius: 8px; padding: .75rem 1rem; margin-bottom: 1.5rem; font-size: .9rem; }
-  .alert-ok { background: var(--vbg); border: 1px solid #9FE1CB; color: #0D5E3F; }
+  .empty{text-align:center;padding:4rem;color:var(--cinza);grid-column:1/-1;}
 
-  /* Modal */
-  .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 50; justify-content: center; align-items: flex-start; padding: 2rem 1rem; overflow-y: auto; }
-  .overlay.open { display: flex; }
-  .modal { background: var(--branco); border-radius: 14px; padding: 2rem; width: 100%; max-width: 560px; position: relative; margin: auto; }
-  .modal h2 { font-size: 1.05rem; margin-bottom: 1.4rem; }
-  .close { position: absolute; top: 1rem; right: 1rem; background: none; border: none; font-size: 1.3rem; cursor: pointer; color: var(--cinza); }
-  .field { margin-bottom: 1rem; }
-  .field label { display: block; font-size: .75rem; color: var(--cinza); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 4px; }
-  .field input, .field select { width: 100%; padding: .55rem .75rem; border: 1px solid var(--borda); border-radius: 6px; font-size: .9rem; font-family: inherit; }
-  .field input:focus, .field select:focus { outline: none; border-color: var(--vermelho); }
-  .field .hint { font-size: .75rem; color: var(--cinza); margin-top: 3px; }
-  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
-  .modal-footer { display: flex; justify-content: flex-end; gap: .75rem; margin-top: 1.5rem; }
-  .btn-cancel { background: var(--branco); border: 1px solid var(--borda); color: var(--preto); padding: .6rem 1.2rem; border-radius: 6px; font-size: .875rem; cursor: pointer; }
-  .btn-save   { background: var(--vermelho); color: var(--branco); border: none; padding: .6rem 1.4rem; border-radius: 6px; font-size: .875rem; font-weight: 700; cursor: pointer; }
-  .btn-save:hover { background: var(--vd); }
+  /* ─── Overlay ─── */
+  .ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:50;justify-content:center;align-items:flex-start;padding:2rem 1rem;overflow-y:auto;}
+  .ov.open{display:flex;}
+  .modal{background:#FFF;border-radius:14px;padding:2rem;width:100%;max-width:520px;position:relative;margin:auto;}
+  .modal h2{font-size:1.05rem;margin-bottom:1.4rem;}
+  .close-btn{position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.3rem;cursor:pointer;color:var(--cinza);}
 
-  /* Logs modal */
-  .logs-body { background: #111; color: #4ADE80; font-family: monospace; font-size: .78rem; border-radius: 6px; padding: 1rem; min-height: 200px; max-height: 400px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; margin-top: .5rem; }
+  .field{margin-bottom:.9rem;}
+  .field label{display:block;font-size:.73rem;color:var(--cinza);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;}
+  .field input{width:100%;padding:.55rem .75rem;border:1px solid var(--borda);border-radius:6px;font-size:.9rem;font-family:inherit;}
+  .field input:focus{outline:none;border-color:var(--verm);}
+  .field .hint{font-size:.73rem;color:var(--cinza);margin-top:3px;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;}
+  .mfooter{display:flex;justify-content:flex-end;gap:.75rem;margin-top:1.5rem;}
+  .btn-cancel{background:#FFF;border:1px solid var(--borda);color:var(--preto);padding:.6rem 1.2rem;border-radius:6px;font-size:.875rem;cursor:pointer;}
+  .btn-save{background:var(--verm);color:#FFF;border:none;padding:.6rem 1.6rem;border-radius:6px;font-size:.875rem;font-weight:700;cursor:pointer;}
+  .btn-save:hover{background:var(--vd);}
+  .btn-save:disabled{background:#AAA;cursor:not-allowed;}
+
+  /* ─── Wizard de criação ─── */
+  .steps{display:flex;flex-direction:column;gap:.6rem;margin-bottom:1.5rem;}
+  .step{display:flex;align-items:center;gap:.75rem;padding:.6rem .85rem;border-radius:8px;background:#F9F9F9;border:1px solid var(--borda);font-size:.875rem;}
+  .step-icon{font-size:1.1rem;width:24px;text-align:center;flex-shrink:0;}
+  .step.done{background:var(--vbg);border-color:#9FE1CB;}
+  .step.active{background:#EEF6FF;border-color:#B3D4F5;}
+  .step.error{background:#FFF0F0;border-color:#FFCDD2;}
+
+  /* QR Code */
+  .qr-wrap{display:flex;flex-direction:column;align-items:center;gap:1rem;padding:1rem 0;}
+  .qr-box{width:220px;height:220px;border:2px dashed var(--borda);border-radius:10px;display:flex;align-items:center;justify-content:center;color:var(--cinza);font-size:.85rem;text-align:center;padding:1rem;}
+  .qr-box img{width:200px;height:200px;object-fit:contain;border-radius:6px;}
+  .qr-hint{font-size:.8rem;color:var(--cinza);text-align:center;max-width:280px;}
+  .connected-msg{background:var(--vbg);border:1px solid #9FE1CB;color:#0D5E3F;border-radius:8px;padding:1rem;text-align:center;font-weight:600;font-size:.9rem;}
+
+  /* Logs */
+  .logs-body{background:#111;color:#4ADE80;font-family:monospace;font-size:.75rem;border-radius:6px;padding:1rem;min-height:160px;max-height:380px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;margin-top:.5rem;}
 </style>
 </head>
 <body>
 
 <header>
   <div class="logo">Biaphone Admin</div>
-  <button class="h-btn h-btn-gray" onclick="rebuildRestart(this)">🔄 Rebuild + Reiniciar Todos</button>
-  <a href="/logout" style="text-decoration:none;"><button class="h-btn h-btn-gray">Sair</button></a>
+  <button class="hbtn hbtn-g" onclick="rebuildRestart(this)">🔄 Rebuild + Reiniciar Todos</button>
+  <a href="/logout"><button class="hbtn hbtn-g">Sair</button></a>
 </header>
 
 <main>
 
-  {% if created %}
-  <div class="alert alert-ok">✅ Cliente criado e container iniciado com sucesso!</div>
+  {% if not evo_ok %}
+  <div class="alert alert-warn">
+    ⚠️ <strong>Evolution API não configurada.</strong>
+    Adicione <code>EVOLUTION_HOST</code> e <code>EVOLUTION_API_KEY</code> no <code>.env</code> da VPS e reinicie o admin.
+  </div>
   {% endif %}
 
   <div class="stats">
-    <div class="stat vermelho"><div class="n">{{ total }}</div><div class="l">Total de Clientes</div></div>
-    <div class="stat verde"><div class="n">{{ running }}</div><div class="l">Rodando</div></div>
+    <div class="stat r"><div class="n">{{ total }}</div><div class="l">Total</div></div>
+    <div class="stat v"><div class="n">{{ running }}</div><div class="l">Rodando</div></div>
   </div>
 
-  <div class="section-header">
-    <div class="section-title">Clientes</div>
-    <button class="btn-new" onclick="document.getElementById('modalNew').classList.add('open')">➕ Novo Cliente</button>
+  <div class="sec-hd">
+    <div class="sec-title">Clientes</div>
+    <button class="btn-new" onclick="abrirModalNovo()">➕ Novo Cliente</button>
   </div>
 
   <div class="grid">
@@ -120,226 +133,300 @@
             <div class="card-name">{{ c.store_name }}</div>
             <div class="card-slug">{{ c.name }}</div>
           </div>
-          <span class="badge badge-{{ c.status }}">
-            {% if c.status == 'running' %}● Rodando
+          <span class="badge b-{{ c.status }}">
+            {% if   c.status == 'running'   %}● Rodando
             {% elif c.status == 'not_found' %}Não encontrado
             {% else %}■ {{ c.status }}{% endif %}
           </span>
         </div>
 
         <div class="card-url">
-          🌐 <a href="#" id="url-{{ c.name }}" target="_blank">
-            <span class="port-{{ c.name }}">:{{ c.port }}</span>
+          🌐 <a id="url-{{ c.name }}" href="#" target="_blank" data-port="{{ c.port }}">
+            carregando...
           </a>
         </div>
 
-        <div class="card-meta">
-          Porta {{ c.port }} · Criado {{ c.created_at[:10] if c.created_at else '—' }}
-        </div>
+        <div class="card-meta">Porta {{ c.port }} · {{ c.created_at[:10] if c.created_at else '—' }}</div>
 
-        <div class="card-actions">
-          <button class="act act-blue" onclick="openPanel('{{ c.name }}', {{ c.port }})">🔗 Painel</button>
-          <button class="act act-grn"  onclick="restartClient('{{ c.name }}', this)">↺ Reiniciar</button>
+        <div class="acts">
+          <button class="act act-b" onclick="openPanel({{ c.port }})">🔗 Painel</button>
+          <button class="act act-g" onclick="apiAct('/clients/{{ c.name }}/restart', this, '↺', 'Reiniciado!')">↺ Reiniciar</button>
           {% if c.status == 'running' %}
-          <button class="act" onclick="stopClient('{{ c.name }}', this)">⏹ Parar</button>
+          <button class="act" onclick="apiAct('/clients/{{ c.name }}/stop', this, '⏹', 'Parado!', true)">⏹ Parar</button>
           {% else %}
-          <button class="act act-grn" onclick="startClient('{{ c.name }}', this)">▶ Iniciar</button>
+          <button class="act act-g" onclick="apiAct('/clients/{{ c.name }}/start', this, '▶', 'Iniciado!', true)">▶ Iniciar</button>
           {% endif %}
           <button class="act" onclick="showLogs('{{ c.name }}')">📋 Logs</button>
-          <button class="act act-red" onclick="deleteClient('{{ c.name }}', this)">🗑 Excluir</button>
+          <button class="act act-r" onclick="excluir('{{ c.name }}')">🗑</button>
         </div>
       </div>
       {% endfor %}
     {% else %}
       <div class="empty">
         <div style="font-size:2.5rem;margin-bottom:.75rem">🤖</div>
-        Nenhum cliente ainda. Clique em <strong>Novo Cliente</strong> para começar.
+        Nenhum cliente ainda.<br>Clique em <strong>➕ Novo Cliente</strong> para começar.
       </div>
     {% endif %}
   </div>
-
 </main>
 
-<!-- ─── Modal: Novo Cliente ───────────────────────────────── -->
-<div class="overlay" id="modalNew">
-  <div class="modal">
-    <button class="close" onclick="document.getElementById('modalNew').classList.remove('open')">×</button>
-    <h2>➕ Novo Cliente</h2>
 
-    <form method="POST" action="/clients/new">
-      <div class="row2">
-        <div class="field">
-          <label>Slug (ID único)</label>
-          <input type="text" name="name" placeholder="ex: topphone2" required pattern="[a-z0-9_-]+" title="Apenas letras minúsculas, números e hífens">
-          <div class="hint">Identificador interno — sem espaços</div>
-        </div>
-        <div class="field">
-          <label>Porta</label>
-          <input type="number" name="port" value="{{ next_port }}" min="1024" max="65535" required>
-          <div class="hint">Porta que o bot vai usar na VPS</div>
-        </div>
-      </div>
+<!-- ══════════════════════════════════════════════════ -->
+<!-- Modal: Novo Cliente                               -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="ov" id="ovNovo">
+<div class="modal">
+  <button class="close-btn" onclick="fecharNovo()">×</button>
+  <h2>➕ Novo Cliente</h2>
 
-      <div class="row2">
-        <div class="field">
-          <label>Nome da Loja</label>
-          <input type="text" name="store_name" placeholder="Top Phone" required>
-        </div>
-        <div class="field">
-          <label>Endereço</label>
-          <input type="text" name="store_address" placeholder="Rua Ex., 123 — Cidade-UF">
-        </div>
-      </div>
-
-      <div class="field" style="border-top:1px solid var(--borda);padding-top:1rem;margin-top:.5rem;">
-        <label>Evolution API — URL do servidor</label>
-        <input type="text" name="evolution_host" placeholder="http://IP:8080" required>
-      </div>
-      <div class="row2">
-        <div class="field">
-          <label>API Key</label>
-          <input type="text" name="evolution_api_key" placeholder="sua-api-key" required>
-        </div>
-        <div class="field">
-          <label>Nome da instância</label>
-          <input type="text" name="evolution_instance" placeholder="nome-instancia" required>
-        </div>
-      </div>
-
-      <div class="field" style="border-top:1px solid var(--borda);padding-top:1rem;margin-top:.5rem;">
-        <label>Groq API Key</label>
-        <input type="text" name="groq_api_key" placeholder="gsk_..." required>
-      </div>
-
+  <!-- FORMULÁRIO -->
+  <div id="formStep">
+    <div class="row2">
       <div class="field">
-        <label>Número do Atendente</label>
-        <input type="text" name="atendente_number" placeholder="5581999999999">
-        <div class="hint">DDI + DDD + número (sem espaços ou símbolos)</div>
+        <label>Slug (ID)</label>
+        <input type="text" id="f_name" placeholder="phonecenter" pattern="[a-z0-9_-]+" required>
+        <div class="hint">Minúsculas, sem espaço. Vira o nome da instância.</div>
       </div>
+      <div class="field">
+        <label>Porta</label>
+        <input type="number" id="f_port" value="{{ next_port }}" min="1024" max="65535" required>
+        <div class="hint">Porta que o bot vai usar</div>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Nome da Loja</label>
+        <input type="text" id="f_store" placeholder="Phone Center" required>
+      </div>
+      <div class="field">
+        <label>Endereço</label>
+        <input type="text" id="f_addr" placeholder="Rua Ex., 99 — Cidade-UF">
+      </div>
+    </div>
+    <div class="field">
+      <label>Número do Atendente</label>
+      <input type="text" id="f_atend" placeholder="5581999999999">
+      <div class="hint">DDI+DDD+número — quem recebe alertas de leads</div>
+    </div>
+    <div class="field">
+      <label>Groq API Key <span style="font-weight:400;text-transform:none">(opcional — usa chave compartilhada se vazio)</span></label>
+      <input type="text" id="f_groq" placeholder="gsk_... (deixe vazio para usar a padrão)">
+    </div>
+    <div id="formErr" style="color:var(--verm);font-size:.83rem;margin-top:.5rem;display:none;"></div>
+    <div class="mfooter">
+      <button class="btn-cancel" onclick="fecharNovo()">Cancelar</button>
+      <button class="btn-save" id="btnCriar" onclick="criarCliente()">🚀 Criar e Iniciar</button>
+    </div>
+  </div>
 
-      <div class="modal-footer">
-        <button type="button" class="btn-cancel" onclick="document.getElementById('modalNew').classList.remove('open')">Cancelar</button>
-        <button type="submit" class="btn-save">🚀 Criar e Iniciar</button>
-      </div>
-    </form>
+  <!-- WIZARD (aparece depois de criar) -->
+  <div id="wizardStep" style="display:none;">
+    <div class="steps" id="steps">
+      <div class="step done"  id="st1"><span class="step-icon">✅</span> Cliente criado</div>
+      <div class="step done"  id="st2"><span class="step-icon">✅</span> Instância Evolution criada</div>
+      <div class="step done"  id="st3"><span class="step-icon">✅</span> Webhook configurado</div>
+      <div class="step active" id="st4"><span class="step-icon">📱</span> Conectar WhatsApp — escaneie o QR Code</div>
+    </div>
+
+    <div class="qr-wrap" id="qrArea">
+      <div class="qr-box" id="qrBox"><span id="qrMsg">Carregando QR Code...</span></div>
+      <p class="qr-hint">Abra o WhatsApp → Menu → Aparelhos conectados → Conectar aparelho → Escaneie</p>
+    </div>
+
+    <div id="connectedArea" style="display:none;">
+      <div class="connected-msg">✅ WhatsApp conectado! O bot já está respondendo.</div>
+    </div>
+
+    <div class="mfooter">
+      <button class="btn-save" id="btnFecharWizard" style="display:none;" onclick="fecharNovo(); location.reload();">Fechar e atualizar</button>
+    </div>
   </div>
 </div>
-
-<!-- ─── Modal: Logs ──────────────────────────────────────── -->
-<div class="overlay" id="modalLogs">
-  <div class="modal" style="max-width:700px;">
-    <button class="close" onclick="document.getElementById('modalLogs').classList.remove('open')">×</button>
-    <h2>📋 Logs — <span id="logsClientName"></span></h2>
-    <div class="logs-body" id="logsContent">Carregando...</div>
-  </div>
 </div>
+
+
+<!-- ══════════════════════════════════════════════════ -->
+<!-- Modal: Logs                                       -->
+<!-- ══════════════════════════════════════════════════ -->
+<div class="ov" id="ovLogs">
+<div class="modal" style="max-width:680px;">
+  <button class="close-btn" onclick="document.getElementById('ovLogs').classList.remove('open')">×</button>
+  <h2>📋 Logs — <span id="logsTitle"></span></h2>
+  <div class="logs-body" id="logsBody">Carregando...</div>
+</div>
+</div>
+
 
 <script>
-// Constrói URLs dos clientes com o IP atual
 const HOST = window.location.hostname;
+
+// Preenche URLs dos clientes com o IP real
 document.querySelectorAll('[id^="url-"]').forEach(a => {
-  const portEl = a.querySelector('[class^="port-"]');
-  if (portEl) {
-    const port = portEl.textContent.replace(':', '');
-    a.href = `http://${HOST}:${port}/config`;
-    a.textContent = `http://${HOST}:${port}`;
-  }
+  const port = a.dataset.port;
+  a.href = `http://${HOST}:${port}/config`;
+  a.textContent = `http://${HOST}:${port}`;
 });
 
-function openPanel(name, port) {
-  window.open(`http://${HOST}:${port}/config`, '_blank');
-}
+function openPanel(port) { window.open(`http://${HOST}:${port}/config`, '_blank'); }
 
-async function apiCall(url, method = 'POST') {
-  const r = await fetch(url, { method });
-  const d = await r.json();
-  if (!r.ok) throw new Error(d.detail || JSON.stringify(d));
-  return d;
-}
-
-function toast(msg, ok = true) {
+// ─── Toast de feedback ──────────────────────────────
+function toast(msg, ok=true) {
   const t = document.createElement('div');
   t.textContent = msg;
   Object.assign(t.style, {
-    position: 'fixed', bottom: '1.5rem', right: '1.5rem',
-    background: ok ? '#1D9E75' : '#E02020', color: '#FFF',
-    padding: '.75rem 1.2rem', borderRadius: '8px',
-    fontFamily: 'Segoe UI, Arial, sans-serif', fontSize: '.9rem',
-    fontWeight: '600', zIndex: '9999', boxShadow: '0 4px 20px rgba(0,0,0,.25)',
+    position:'fixed', bottom:'1.5rem', right:'1.5rem',
+    background: ok ? '#1D9E75' : '#E02020', color:'#FFF',
+    padding:'.75rem 1.2rem', borderRadius:'8px', fontFamily:'inherit',
+    fontSize:'.875rem', fontWeight:'600', zIndex:'9999',
+    boxShadow:'0 4px 20px rgba(0,0,0,.25)',
   });
   document.body.appendChild(t);
   setTimeout(() => t.remove(), 3000);
 }
 
-async function restartClient(name, btn) {
-  const orig = btn.textContent;
-  btn.textContent = '⏳'; btn.disabled = true;
+// ─── Ação genérica de container ─────────────────────
+async function apiAct(url, btn, icon, successMsg, reload=false) {
+  const orig = btn.textContent; btn.textContent = '⏳'; btn.disabled = true;
   try {
-    await apiCall(`/clients/${name}/restart`);
-    toast(`${name} reiniciado!`);
+    const r = await fetch(url, {method: url.includes('DELETE') ? 'DELETE' : 'POST'});
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.detail || JSON.stringify(d));
+    toast(successMsg);
+    if (reload) setTimeout(() => location.reload(), 1200);
   } catch(e) { toast(`Erro: ${e.message}`, false); }
   finally { btn.textContent = orig; btn.disabled = false; }
 }
 
-async function stopClient(name, btn) {
-  if (!confirm(`Parar o bot "${name}"?`)) return;
-  const orig = btn.textContent;
-  btn.textContent = '⏳'; btn.disabled = true;
-  try {
-    await apiCall(`/clients/${name}/stop`);
-    toast(`${name} parado.`);
-    setTimeout(() => location.reload(), 1500);
-  } catch(e) { toast(`Erro: ${e.message}`, false); btn.textContent = orig; btn.disabled = false; }
+async function excluir(name) {
+  if (!confirm(`Excluir o cliente "${name}"?\n\nO container será removido. Os arquivos de dados NÃO são apagados.`)) return;
+  await apiAct(`/clients/${name}`, {textContent:'', disabled:false}, '', 'Removido!');
+  document.getElementById(`card-${name}`)?.remove();
 }
 
-async function startClient(name, btn) {
-  const orig = btn.textContent;
-  btn.textContent = '⏳'; btn.disabled = true;
-  try {
-    await apiCall(`/clients/${name}/start`);
-    toast(`${name} iniciado!`);
-    setTimeout(() => location.reload(), 1500);
-  } catch(e) { toast(`Erro: ${e.message}`, false); btn.textContent = orig; btn.disabled = false; }
-}
-
-async function deleteClient(name, btn) {
-  if (!confirm(`Excluir o cliente "${name}"?\n\nO container será removido. Os arquivos de dados no diretório clients/${name}/ NÃO serão apagados.`)) return;
-  btn.disabled = true;
-  try {
-    await apiCall(`/clients/${name}`, 'DELETE');
-    document.getElementById(`card-${name}`)?.remove();
-    toast(`${name} removido.`);
-  } catch(e) { toast(`Erro: ${e.message}`, false); btn.disabled = false; }
-}
-
+// ─── Logs ───────────────────────────────────────────
 async function showLogs(name) {
-  document.getElementById('logsClientName').textContent = name;
-  document.getElementById('logsContent').textContent = 'Carregando...';
-  document.getElementById('modalLogs').classList.add('open');
+  document.getElementById('logsTitle').textContent = name;
+  document.getElementById('logsBody').textContent = 'Carregando...';
+  document.getElementById('ovLogs').classList.add('open');
   try {
     const d = await fetch(`/clients/${name}/logs`).then(r => r.json());
-    document.getElementById('logsContent').textContent = d.logs || '(sem logs)';
-    const box = document.getElementById('logsContent');
+    const box = document.getElementById('logsBody');
+    box.textContent = d.logs || '(sem logs)';
     box.scrollTop = box.scrollHeight;
+  } catch(e) { document.getElementById('logsBody').textContent = `Erro: ${e.message}`; }
+}
+
+// ─── Rebuild + Reiniciar Todos ──────────────────────
+async function rebuildRestart(btn) {
+  if (!confirm('Rebuilda a imagem Docker e reinicia TODOS os bots.\n\nContinuar?')) return;
+  const orig = btn.textContent; btn.textContent = '⏳ Rebuilding...'; btn.disabled = true;
+  try {
+    const d = await fetch('/rebuild-restart', {method:'POST'}).then(r => r.json());
+    toast(`✅ Build OK! ${d.restarted?.length || 0} reiniciados.`);
+  } catch(e) { toast(`Erro: ${e.message}`, false); }
+  finally { btn.textContent = orig; btn.disabled = false; }
+}
+
+// ─── Modal Novo Cliente ─────────────────────────────
+function abrirModalNovo() {
+  document.getElementById('formStep').style.display = '';
+  document.getElementById('wizardStep').style.display = 'none';
+  document.getElementById('formErr').style.display = 'none';
+  document.getElementById('btnCriar').disabled = false;
+  document.getElementById('btnCriar').textContent = '🚀 Criar e Iniciar';
+  document.getElementById('ovNovo').classList.add('open');
+}
+function fecharNovo() {
+  document.getElementById('ovNovo').classList.remove('open');
+  clearInterval(window._pollInterval);
+}
+
+async function criarCliente() {
+  const btn = document.getElementById('btnCriar');
+  const err = document.getElementById('formErr');
+  err.style.display = 'none';
+
+  const name  = document.getElementById('f_name').value.trim();
+  const port  = document.getElementById('f_port').value;
+  const store = document.getElementById('f_store').value.trim();
+  const addr  = document.getElementById('f_addr').value.trim();
+  const atend = document.getElementById('f_atend').value.trim();
+  const groq  = document.getElementById('f_groq').value.trim();
+
+  if (!name || !port || !store) {
+    err.textContent = 'Preencha: Slug, Porta e Nome da Loja.';
+    err.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Criando...';
+
+  const body = new FormData();
+  body.append('name',             name);
+  body.append('port',             port);
+  body.append('store_name',       store);
+  body.append('store_address',    addr);
+  body.append('atendente_number', atend);
+  body.append('groq_api_key',     groq);
+
+  try {
+    const r = await fetch('/clients/new', {method: 'POST', body});
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || 'Erro desconhecido.');
+
+    // Mostrar wizard com QR
+    document.getElementById('formStep').style.display = 'none';
+    document.getElementById('wizardStep').style.display = '';
+    iniciarQR(d.name);
+
   } catch(e) {
-    document.getElementById('logsContent').textContent = `Erro: ${e.message}`;
+    err.textContent = e.message;
+    err.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = '🚀 Criar e Iniciar';
   }
 }
 
-async function rebuildRestart(btn) {
-  if (!confirm('Isso vai rebuildar a imagem Docker e reiniciar TODOS os bots.\n\nContinuar?')) return;
-  const orig = btn.textContent;
-  btn.textContent = '⏳ Rebuilding...'; btn.disabled = true;
+// ─── QR Code + polling ──────────────────────────────
+async function iniciarQR(clientName) {
+  const box = document.getElementById('qrBox');
+  const msg = document.getElementById('qrMsg');
+
+  // Fetch QR
   try {
-    const d = await apiCall('/rebuild-restart');
-    toast(`✅ Build OK! ${d.restarted?.length || 0} containers reiniciados.`);
-  } catch(e) { toast(`Erro: ${e.message}`, false); }
-  finally { btn.textContent = orig; btn.disabled = false; }
+    const r = await fetch(`/clients/${clientName}/qr`);
+    const d = await r.json();
+    if (r.ok && d.qr) {
+      box.innerHTML = `<img src="${d.qr}" alt="QR Code">`;
+    } else {
+      box.innerHTML = `<span style="color:var(--amarelo)">⚠️ ${d.error || 'QR não disponível'}</span>`;
+    }
+  } catch(e) {
+    box.innerHTML = `<span style="color:var(--verm)">Erro ao buscar QR: ${e.message}</span>`;
+  }
+
+  // Poll até conectar
+  window._pollInterval = setInterval(async () => {
+    try {
+      const s = await fetch(`/clients/${clientName}/wa-status`).then(r => r.json());
+      if (s.connected) {
+        clearInterval(window._pollInterval);
+        document.getElementById('st4').className = 'step done';
+        document.getElementById('st4').innerHTML = '<span class="step-icon">✅</span> WhatsApp conectado!';
+        document.getElementById('qrArea').style.display = 'none';
+        document.getElementById('connectedArea').style.display = '';
+        document.getElementById('btnFecharWizard').style.display = '';
+      }
+    } catch {}
+  }, 4000);
 }
 
-// Fecha modais clicando fora
-document.querySelectorAll('.overlay').forEach(o => {
-  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+// Fecha ao clicar fora
+document.querySelectorAll('.ov').forEach(o => {
+  o.addEventListener('click', e => {
+    if (e.target === o) { o.classList.remove('open'); clearInterval(window._pollInterval); }
+  });
 });
 </script>
 </body>
