@@ -74,9 +74,6 @@
   .alert-success { background: var(--verde-bg); border: 1px solid #9FE1CB; color: #0D5E3F; border-radius: 8px; padding: .75rem 1rem; margin-bottom: 1.5rem; font-size: .9rem; }
   .alert-info    { background: #EEF6FF; border: 1px solid #B3D4F5; color: #1a4a80; border-radius: 8px; padding: .75rem 1rem; margin-bottom: 1rem; font-size: .875rem; }
 
-  .webhook-box { background: #111; color: #4ADE80; font-family: monospace; font-size: .85rem; border-radius: 6px; padding: .75rem 1rem; word-break: break-all; display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
-  .copy-btn { background: #333; color: #FFF; border: none; border-radius: 4px; padding: .3rem .7rem; font-size: .78rem; cursor: pointer; white-space: nowrap; }
-  .copy-btn:hover { background: #555; }
   .toggle-pass { cursor: pointer; color: var(--cinza-texto); font-size:.8rem; float:right; margin-top:-1.4rem; padding:.2rem .4rem; user-select:none; }
 
   .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
@@ -130,9 +127,7 @@
     <h2><span class="icon">✅</span> Checklist de Setup</h2>
     <ul class="checklist" id="checklistItems">
       <li><span class="check-icon">⏳</span><span class="check-label pending" id="chk-loja">Nome da loja configurado</span></li>
-      <li><span class="check-icon">⏳</span><span class="check-label pending" id="chk-evo">Evolution API configurada</span></li>
-      <li><span class="check-icon">⏳</span><span class="check-label pending" id="chk-groq">Chave Groq configurada</span></li>
-      <li><span class="check-icon">⏳</span><span class="check-label pending" id="chk-atendente">Atendente configurado</span></li>
+      <li><span class="check-icon">⏳</span><span class="check-label pending" id="chk-atendente">Número do atendente configurado</span></li>
       <li><span class="check-icon">⏳</span><span class="check-label pending" id="chk-whatsapp">WhatsApp conectado</span></li>
     </ul>
   </div>
@@ -151,10 +146,7 @@
 
     <div style="display:flex;gap:.75rem;margin-bottom:1rem;flex-wrap:wrap;">
       <button type="button" class="btn-verde" id="btnQR" onclick="gerarQR()">📷 Gerar QR Code</button>
-      <button type="button" class="btn-azul" onclick="configurarWebhook()">🔗 Configurar Webhook</button>
     </div>
-
-    <div class="alert-info" id="webhookAlert" style="display:none;"></div>
 
     <div class="qr-area" id="qrArea" style="display:none;">
       <div class="qr-img-wrap" id="qrWrap">
@@ -260,57 +252,6 @@
       </div>
     </div>
 
-    <!-- EVOLUTION API -->
-    <div class="card">
-      <h2><span class="icon">📡</span> Evolution API</h2>
-
-      <label>URL do servidor</label>
-      <input type="text" name="EVOLUTION_HOST" value="{{ cfg.EVOLUTION_HOST }}" placeholder="http://192.168.1.100:8080">
-      <p class="hint">Endereço completo da sua Evolution API (sem barra no final)</p>
-
-      <label>API Key</label>
-      <input type="password" name="EVOLUTION_API_KEY" id="evoKey" value="{{ cfg.EVOLUTION_API_KEY }}" placeholder="sua-api-key">
-      <span class="toggle-pass" onclick="togglePass('evoKey', this)">mostrar</span>
-
-      <label>Nome da instância</label>
-      <input type="text" name="EVOLUTION_INSTANCE" value="{{ cfg.EVOLUTION_INSTANCE }}" placeholder="top-phone">
-      <p class="hint">Nome exato da instância criada na Evolution API</p>
-
-      <label>Número do atendente principal (legado)</label>
-      <input type="text" name="ATENDENTE_NUMBER" value="{{ cfg.ATENDENTE_NUMBER }}" placeholder="5581999999999">
-      <p class="hint">Use o campo "Atendentes" acima para múltiplos números. Este campo é mantido para compatibilidade.</p>
-    </div>
-
-    <!-- GROQ -->
-    <div class="card">
-      <h2><span class="icon">🧠</span> Groq (IA + Transcrição de Áudio)</h2>
-
-      <label>API Key do Groq</label>
-      <input type="password" name="GROQ_API_KEY" id="groqKey" value="{{ cfg.GROQ_API_KEY }}" placeholder="gsk_...">
-      <span class="toggle-pass" onclick="togglePass('groqKey', this)">mostrar</span>
-      <p class="hint">Usada tanto para a IA de chat quanto para transcrição de áudios (Whisper). Obtenha em <strong>console.groq.com</strong></p>
-
-      <label>Modelo de chat</label>
-      <select name="GROQ_MODEL">
-        <option value="llama-3.3-70b-versatile" {% if cfg.GROQ_MODEL == 'llama-3.3-70b-versatile' %}selected{% endif %}>LLaMA 3.3 70B Versatile (recomendado)</option>
-        <option value="llama-3.1-8b-instant"    {% if cfg.GROQ_MODEL == 'llama-3.1-8b-instant'    %}selected{% endif %}>LLaMA 3.1 8B Instant (mais rápido)</option>
-        <option value="mixtral-8x7b-32768"       {% if cfg.GROQ_MODEL == 'mixtral-8x7b-32768'       %}selected{% endif %}>Mixtral 8x7B</option>
-      </select>
-    </div>
-
-    <!-- WEBHOOK -->
-    <div class="card">
-      <h2><span class="icon">🔗</span> Webhook — Configure na Evolution API</h2>
-      <p style="font-size:.875rem;color:var(--cinza-texto);margin-bottom:1rem;">
-        Configure este endereço na Evolution API (evento: <strong>MESSAGES_UPSERT</strong>).
-        Use o botão <strong>"Configurar Webhook"</strong> acima para configurar automaticamente.
-      </p>
-      <div class="webhook-box">
-        <span id="webhookUrl">…</span>
-        <button type="button" class="copy-btn" onclick="copiarWebhook()">Copiar</button>
-      </div>
-    </div>
-
     <button type="submit" class="btn-primary">💾 Salvar configurações</button>
   </form>
 
@@ -338,8 +279,6 @@
 </main>
 
 <script>
-document.getElementById('webhookUrl').textContent = window.location.origin + '/webhook/whatsapp';
-
 // ─── Checklist de setup ────────────────────────────────────────
 function setCheck(id, ok, label) {
   const el   = document.getElementById(id);
@@ -356,31 +295,15 @@ function setCheck(id, ok, label) {
 }
 
 function runChecklist() {
-  const cfg = {
-    loja:      '{{ cfg.store_name }}',
-    evo_host:  '{{ cfg.EVOLUTION_HOST }}',
-    evo_key:   '{{ cfg.EVOLUTION_API_KEY }}',
-    evo_inst:  '{{ cfg.EVOLUTION_INSTANCE }}',
-    groq_key:  '{{ cfg.GROQ_API_KEY }}',
-    atendente: '{{ cfg.atendentes }}',
-  };
-  setCheck('chk-loja',      !!cfg.loja && cfg.loja !== 'Top Phone',  'Nome da loja configurado');
-  setCheck('chk-evo',       !!(cfg.evo_host && cfg.evo_key && cfg.evo_inst), 'Evolution API configurada');
-  setCheck('chk-groq',      !!(cfg.groq_key && cfg.groq_key.startsWith('gsk_')), 'Chave Groq configurada');
-  setCheck('chk-atendente', !!(cfg.atendente && cfg.atendente.length > 5), 'Atendente configurado');
-
+  const loja      = '{{ cfg.store_name }}';
+  const atendente = '{{ cfg.atendentes }}';
+  setCheck('chk-loja',      loja.length > 1,                      'Nome da loja configurado');
+  setCheck('chk-atendente', atendente.length > 5,                  'Número do atendente configurado');
   fetch('/api/whatsapp/status').then(r => r.json()).then(d => {
     setCheck('chk-whatsapp', d.connected, 'WhatsApp conectado');
   }).catch(() => {});
 }
 runChecklist();
-
-function copiarWebhook() {
-  navigator.clipboard.writeText(document.getElementById('webhookUrl').textContent).then(() => {
-    const btn = event.target; btn.textContent = 'Copiado!';
-    setTimeout(() => btn.textContent = 'Copiar', 2000);
-  });
-}
 
 function togglePass(id, btn) {
   const el = document.getElementById(id);
@@ -515,27 +438,7 @@ async function deletarDoc(id) {
 
 carregarDocs();
 
-// ─── Configurar Webhook ─────────────────────────────────────
-function configurarWebhook() {
-  const alert = document.getElementById('webhookAlert');
-  alert.style.display = 'block';
-  alert.textContent   = '⏳ Configurando webhook na Evolution API...';
-  fetch('/api/whatsapp/setup-webhook', { method: 'POST' })
-    .then(r => r.json().then(d => ({ ok: r.ok, data: d })))
-    .then(({ ok, data }) => {
-      if (ok) {
-        alert.style.background = '#E6F8F2';
-        alert.textContent = `✅ Webhook configurado com sucesso! URL: ${data.webhook_url}`;
-      } else {
-        alert.style.background = '#FFE6E6';
-        alert.textContent = `❌ Erro: ${data.detail}`;
-      }
-    })
-    .catch(e => {
-      alert.style.background = '#FFE6E6';
-      alert.textContent = `❌ Erro de conexão: ${e.message}`;
-    });
-}
+
 </script>
 </body>
 </html>

@@ -17,6 +17,7 @@ load_dotenv()
 ADMIN_PASSWORD  = os.getenv("ADMIN_PASSWORD",  "admin123")
 ADMIN_SECRET    = os.getenv("ADMIN_SECRET",    "change-this-secret-key")
 CLIENTS_DIR     = Path(os.getenv("CLIENTS_DIR",    "/clients"))
+HOST_CLIENTS_DIR = Path(os.getenv("HOST_CLIENTS_DIR", str(CLIENTS_DIR)))
 BOT_IMAGE       = os.getenv("BOT_IMAGE",       "biaphone:latest")
 BOT_SOURCE_DIR  = os.getenv("BOT_SOURCE_DIR",  "/bot_source")
 BASE_PORT       = int(os.getenv("BASE_PORT",   "8000"))
@@ -140,7 +141,8 @@ async def evo_connection_state(name: str) -> str:
             headers={"apikey": EVO_KEY},
         )
         data = r.json()
-        return data.get("instance", {}).get("state", data.get("state", "unknown"))
+        state = data.get("instance", {}).get("state", data.get("state", "unknown"))
+        return state.lower() if isinstance(state, str) else "unknown"
 
 
 # ─── Login ────────────────────────────────────────────────────
@@ -231,7 +233,8 @@ async def new_client(
         return JSONResponse({"error": f"Instância criada, mas webhook falhou: {e}"}, status_code=500)
 
     # 3. Criar diretório e .env do cliente
-    client_dir = CLIENTS_DIR / name
+    client_dir = CLIENTS_DIR / name          # caminho dentro do container do admin
+    host_client_dir = HOST_CLIENTS_DIR / name  # caminho no host (usado nos volumes Docker)
     (client_dir / "data").mkdir(parents=True, exist_ok=True)
 
     env_lines = [
@@ -258,8 +261,8 @@ async def new_client(
             restart_policy={"Name": "unless-stopped"},
             ports={"8000/tcp": port},
             volumes={
-                str(client_dir / ".env"):  {"bind": "/app/.env",  "mode": "rw"},
-                str(client_dir / "data"):  {"bind": "/app/data",  "mode": "rw"},
+                str(host_client_dir / ".env"):  {"bind": "/app/.env",  "mode": "rw"},
+                str(host_client_dir / "data"):  {"bind": "/app/data",  "mode": "rw"},
             },
             environment={"DATABASE_URL": "sqlite:////app/data/bot.db"},
         )
@@ -299,7 +302,7 @@ async def wa_status(name: str, request: Request):
         return JSONResponse({"error": "unauthorized"}, status_code=401)
     try:
         state = await evo_connection_state(name)
-        return {"state": state, "connected": state == "open"}
+        return {"state": state, "connected": state == "open"}  # já normalizado para lower
     except Exception as e:
         return {"state": "error", "connected": False, "detail": str(e)}
 

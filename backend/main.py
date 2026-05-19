@@ -347,12 +347,6 @@ async def config_page(request: Request):
 @app.post("/config")
 async def save_config(
     request: Request,
-    EVOLUTION_HOST: str      = Form(""),
-    EVOLUTION_API_KEY: str   = Form(""),
-    EVOLUTION_INSTANCE: str  = Form(""),
-    ATENDENTE_NUMBER: str    = Form(""),
-    GROQ_API_KEY: str        = Form(""),
-    GROQ_MODEL: str          = Form("llama-3.3-70b-versatile"),
     store_name: str          = Form("Top Phone"),
     store_address: str       = Form(""),
     bot_prompt: str          = Form(""),
@@ -366,39 +360,6 @@ async def save_config(
     pay_cartao: Optional[str]      = Form(None),
     pay_assistencia: Optional[str] = Form(None),
 ):
-    # Salva ENV vars no arquivo .env
-    env_path = "/app/.env"
-    webhook_secret = os.getenv("WEBHOOK_SECRET", "topphone2026")
-    lines = [
-        f"EVOLUTION_HOST={EVOLUTION_HOST}",
-        f"EVOLUTION_API_KEY={EVOLUTION_API_KEY}",
-        f"EVOLUTION_INSTANCE={EVOLUTION_INSTANCE}",
-        f"ATENDENTE_NUMBER={ATENDENTE_NUMBER}",
-        f"GROQ_API_KEY={GROQ_API_KEY}",
-        f"GROQ_MODEL={GROQ_MODEL}",
-        f"WEBHOOK_SECRET={webhook_secret}",
-        f"STORE_NAME={store_name}",
-        f"STORE_ADDRESS={store_address}",
-    ]
-    with open(env_path, "w") as f:
-        f.write("\n".join(lines))
-
-    os.environ["EVOLUTION_HOST"]     = EVOLUTION_HOST
-    os.environ["EVOLUTION_API_KEY"]  = EVOLUTION_API_KEY
-    os.environ["EVOLUTION_INSTANCE"] = EVOLUTION_INSTANCE
-    os.environ["ATENDENTE_NUMBER"]   = ATENDENTE_NUMBER
-    os.environ["GROQ_API_KEY"]       = GROQ_API_KEY
-    os.environ["GROQ_MODEL"]         = GROQ_MODEL
-
-    import backend.bot as bot_module
-    bot_module.GROQ_API_KEY       = GROQ_API_KEY
-    bot_module.GROQ_MODEL         = GROQ_MODEL
-    bot_module.EVOLUTION_HOST     = EVOLUTION_HOST
-    bot_module.EVOLUTION_API_KEY  = EVOLUTION_API_KEY
-    bot_module.EVOLUTION_INSTANCE = EVOLUTION_INSTANCE
-    bot_module.ATENDENTE_NUMBER   = ATENDENTE_NUMBER
-
-    # Salva no banco de dados
     set_config("store_name",          store_name)
     set_config("store_address",       store_address)
     set_config("bot_prompt",          bot_prompt)
@@ -436,6 +397,7 @@ async def whatsapp_status():
             )
             data  = r.json()
             state = data.get("instance", {}).get("state", data.get("state", "unknown"))
+            state = state.lower() if isinstance(state, str) else "unknown"
             return {"connected": state == "open", "state": state}
     except Exception as e:
         return {"connected": False, "state": "error", "detail": str(e)}

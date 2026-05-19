@@ -33,6 +33,7 @@ services:
       - .env
     environment:
       - CLIENTS_DIR=/clients
+      - HOST_CLIENTS_DIR=/root/biaphone/clients
       - BOT_IMAGE=biaphone:latest
       - BOT_SOURCE_DIR=/bot_source
       - BASE_PORT=8000
