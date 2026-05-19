@@ -212,7 +212,19 @@ async def new_client(
 
     registry = load_registry()
     if any(c["name"] == name for c in registry):
-        return JSONResponse({"error": f"Cliente '{name}' já existe."}, status_code=400)
+        # Verifica se o container realmente existe; se não, remove do registry e continua
+        if container_status(name) != "not_found":
+            return JSONResponse({"error": f"Cliente '{name}' já existe e está rodando. Exclua-o primeiro."}, status_code=400)
+        registry = [c for c in registry if c["name"] != name]
+        save_registry(registry)
+
+    # Remove container zumbi de tentativa anterior (porta pode estar presa)
+    try:
+        old = dc().containers.get(f"biaphone_{name}")
+        old.stop(timeout=5)
+        old.remove()
+    except docker_sdk.errors.NotFound:
+        pass
 
     groq_key = groq_api_key.strip() or GROQ_KEY_SHARED
     if not groq_key:

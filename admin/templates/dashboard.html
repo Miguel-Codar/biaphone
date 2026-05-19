@@ -238,7 +238,8 @@
     </div>
 
     <div class="mfooter">
-      <button class="btn-save" id="btnFecharWizard" style="display:none;" onclick="fecharNovo(); location.reload();">Fechar e atualizar</button>
+      <button class="btn-cancel" onclick="fecharNovo(); location.reload();">Fechar (escanear depois no painel do cliente)</button>
+      <button class="btn-save" id="btnFecharWizard" style="display:none;" onclick="fecharNovo(); location.reload();">✅ Fechar</button>
     </div>
   </div>
 </div>
@@ -299,8 +300,13 @@ async function apiAct(url, btn, icon, successMsg, reload=false) {
 
 async function excluir(name) {
   if (!confirm(`Excluir o cliente "${name}"?\n\nO container será removido. Os arquivos de dados NÃO são apagados.`)) return;
-  await apiAct(`/clients/${name}`, {textContent:'', disabled:false}, '', 'Removido!');
-  document.getElementById(`card-${name}`)?.remove();
+  try {
+    const r = await fetch(`/clients/${name}`, { method: 'DELETE' });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.detail || JSON.stringify(d));
+    document.getElementById(`card-${name}`)?.remove();
+    toast('Cliente removido!');
+  } catch(e) { toast(`Erro ao excluir: ${e.message}`, false); }
 }
 
 // ─── Logs ───────────────────────────────────────────
