@@ -1,6 +1,8 @@
 import os
 import json
 import re
+import secrets
+import string
 from datetime import datetime
 from pathlib import Path
 
@@ -65,6 +67,11 @@ def next_port(registry: list) -> int:
 
 def auth(request: Request) -> bool:
     return bool(request.session.get("authenticated"))
+
+
+def _unique_instance(slug: str) -> str:
+    suffix = ''.join(secrets.choice(string.ascii_lowercase + string.digits) for _ in range(6))
+    return f"{slug}-{suffix}"
 
 
 def container_status(name: str) -> str:
@@ -230,9 +237,10 @@ async def new_client(
     if not groq_key:
         return JSONResponse({"error": "Nenhuma chave Groq disponível. Configure GROQ_API_KEY no .env ou informe no formulário."}, status_code=400)
 
-    # 1. Criar instância na Evolution API
+    # 1. Criar instância na Evolution API com nome único
+    evolution_instance = _unique_instance(name)
     try:
-        await evo_create_instance(name)
+        await evo_create_instance(evolution_instance)
     except Exception as e:
         return JSONResponse({"error": f"Erro ao criar instância Evolution: {e}"}, status_code=500)
 
@@ -240,7 +248,7 @@ async def new_client(
     vps = vps_host(request)
     webhook_url = f"http://{vps}:{port}/webhook/whatsapp"
     try:
-        await evo_set_webhook(name, webhook_url)
+        await evo_set_webhook(evolution_instance, webhook_url)
     except Exception as e:
         return JSONResponse({"error": f"Instância criada, mas webhook falhou: {e}"}, status_code=500)
 
@@ -254,7 +262,7 @@ async def new_client(
         "GROQ_MODEL=llama-3.3-70b-versatile",
         f"EVOLUTION_HOST={EVO_HOST}",
         f"EVOLUTION_API_KEY={EVO_KEY}",
-        f"EVOLUTION_INSTANCE={name}",
+        f"EVOLUTION_INSTANCE={evolution_instance}",
         f"ATENDENTE_NUMBER={atendente_number}",
         "WEBHOOK_SECRET=topphone2026",
         f"STORE_NAME={store_name}",
@@ -283,10 +291,11 @@ async def new_client(
 
     # 5. Registrar
     registry.append({
-        "name":       name,
-        "store_name": store_name,
-        "port":       port,
-        "created_at": datetime.utcnow().isoformat(),
+        "name":               name,
+        "evolution_instance": evolution_instance,
+        "store_name":         store_name,
+        "port":               port,
+        "created_at":         datetime.utcnow().isoformat(),
     })
     save_registry(registry)
 
@@ -295,12 +304,19 @@ async def new_client(
 
 # ─── QR Code e status de conexão ──────────────────────────────
 
+def _evo_instance_for(name: str) -> str:
+    """Retorna o nome da instância Evolution para o cliente (com fallback para o slug)."""
+    registry = load_registry()
+    client = next((c for c in registry if c["name"] == name), None)
+    return client.get("evolution_instance", name) if client else name
+
+
 @app.get("/clients/{name}/qr")
 async def get_qr(name: str, request: Request):
     if not auth(request):
         return JSONResponse({"error": "unauthorized"}, status_code=401)
     try:
-        qr = await evo_get_qr(name)
+        qr = await evo_get_qr(_evo_instance_for(name))
         if not qr:
             return JSONResponse({"error": "QR não disponível. A instância pode já estar conectada."}, status_code=404)
         return {"qr": qr}
@@ -313,8 +329,8 @@ async def wa_status(name: str, request: Request):
     if not auth(request):
         return JSONResponse({"error": "unauthorized"}, status_code=401)
     try:
-        state = await evo_connection_state(name)
-        return {"state": state, "connected": state == "open"}  # já normalizado para lower
+        state = await evo_connection_state(_evo_instance_for(name))
+        return {"state": state, "connected": state == "open"}
     except Exception as e:
         return {"state": "error", "connected": False, "detail": str(e)}
 

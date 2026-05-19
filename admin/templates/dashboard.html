@@ -47,6 +47,11 @@
   .b-stopped,.b-exited{background:#FFF0F0;color:var(--verm);}
   .b-not_found{background:#F4F4F4;color:#AAA;}
   .b-error{background:#FFF8E6;color:var(--amarelo);}
+  .wa-row{display:flex;align-items:center;gap:.4rem;font-size:.78rem;color:var(--cinza);}
+  .wa-dot{width:8px;height:8px;border-radius:50%;background:#CCC;flex-shrink:0;}
+  .wa-dot.open{background:var(--verde);}
+  .wa-dot.close,.wa-dot.closed,.wa-dot.error{background:var(--verm);}
+  .wa-dot.connecting{background:var(--amarelo);}
   .card-url a{font-size:.8rem;color:var(--azul);text-decoration:none;font-family:monospace;}
   .card-url a:hover{text-decoration:underline;}
   .card-meta{font-size:.75rem;color:var(--cinza);}
@@ -144,6 +149,11 @@
           🌐 <a id="url-{{ c.name }}" href="#" target="_blank" data-port="{{ c.port }}">
             carregando...
           </a>
+        </div>
+
+        <div class="wa-row" id="wa-{{ c.name }}">
+          <span class="wa-dot" id="wa-dot-{{ c.name }}"></span>
+          <span id="wa-label-{{ c.name }}">WhatsApp verificando...</span>
         </div>
 
         <div class="card-meta">Porta {{ c.port }} · {{ c.created_at[:10] if c.created_at else '—' }}</div>
@@ -427,6 +437,19 @@ async function iniciarQR(clientName) {
     } catch {}
   }, 4000);
 }
+
+// ─── Status WhatsApp por cliente ────────────────────────────
+async function checkWa(name) {
+  try {
+    const d = await fetch(`/clients/${name}/wa-status`).then(r => r.json());
+    const dot   = document.getElementById(`wa-dot-${name}`);
+    const label = document.getElementById(`wa-label-${name}`);
+    if (!dot) return;
+    dot.className = `wa-dot ${d.state || 'close'}`;
+    label.textContent = d.connected ? '📱 WhatsApp conectado' : '⚫ WhatsApp desconectado';
+  } catch {}
+}
+{% for c in clients %}checkWa('{{ c.name }}');{% endfor %}
 
 // Fecha ao clicar fora
 document.querySelectorAll('.ov').forEach(o => {

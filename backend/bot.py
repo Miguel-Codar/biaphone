@@ -116,7 +116,7 @@ def get_or_create_session(phone: str, db: DBSession) -> Session:
     sess = db.exec(stmt).first()
 
     if sess and sess.stage == "TRANSFERIDO":
-        minutos = (datetime.utcnow() - sess.updated_at).total_seconds() / 60
+        minutos = (datetime.now() - sess.updated_at).total_seconds() / 60
         timeout = _get_timeout()
         if minutos > timeout:
             print(f"[SESSÃO] {phone} — timeout {timeout}min atingido, resetando.")
@@ -126,7 +126,7 @@ def get_or_create_session(phone: str, db: DBSession) -> Session:
             sess.doc_cpf      = False
             sess.doc_luz      = False
             sess.history      = "[]"
-            sess.updated_at   = datetime.utcnow()   # garante reset do timer
+            sess.updated_at   = datetime.now()   # garante reset do timer
             db.add(sess)
             db.commit()
             db.refresh(sess)
@@ -141,7 +141,7 @@ def get_or_create_session(phone: str, db: DBSession) -> Session:
 
 
 def save_session(sess: Session, db: DBSession):
-    sess.updated_at = datetime.utcnow()
+    sess.updated_at = datetime.now()
     db.add(sess)
     db.commit()
     db.refresh(sess)
@@ -251,29 +251,29 @@ def get_or_create_lead(phone: str, db: DBSession) -> Lead:
 
 
 def save_lead(lead: Lead, db: DBSession):
-    lead.updated_at = datetime.utcnow()
+    lead.updated_at = datetime.now()
     db.add(lead)
     db.commit()
     db.refresh(lead)
 
 
-def touch_lead_message_time(phone: str, db: DBSession):
-    """Atualiza o timestamp da última mensagem do cliente no lead (se existir)."""
+def touch_lead_message_time(phone: str, db: DBSession, contact_name: str = ""):
+    """Atualiza o timestamp da última mensagem e salva o nome do contato se ainda não tiver."""
     stmt = select(Lead).where(Lead.phone == phone)
     lead = db.exec(stmt).first()
     if lead:
-        lead.last_message_at = datetime.utcnow()
+        lead.last_message_at = datetime.now()
+        if contact_name and not lead.name:
+            lead.name = contact_name
         db.add(lead)
         db.commit()
 
 
 # ─── LÓGICA PRINCIPAL ─────────────────────────────────────────────────────────
 
-async def process_message(phone: str, message: str, msg_type: str, db: DBSession):
+async def process_message(phone: str, message: str, msg_type: str, db: DBSession, contact_name: str = ""):
     sess = get_or_create_session(phone, db)
-
-    # Atualiza timestamp da mensagem no lead (para monitoramento de ausência de resposta)
-    touch_lead_message_time(phone, db)
+    touch_lead_message_time(phone, db, contact_name)
 
     if sess.stage == "TRANSFERIDO":
         print(f"[BOT] {phone} — sessão transferida, ignorando mensagem.")
@@ -402,6 +402,6 @@ async def _transferir(phone: str, sess: Session, db: DBSession):
     lead.doc_cpf         = sess.doc_cpf
     lead.doc_luz         = sess.doc_luz
     lead.status          = "em_analise"
-    lead.last_message_at = datetime.utcnow()
+    lead.last_message_at = datetime.now()
     save_lead(lead, db)
     await notify_atendente(lead)

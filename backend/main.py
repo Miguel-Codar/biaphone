@@ -24,6 +24,47 @@ from .bot import process_message, DEFAULT_CUSTOM_PROMPT, send_whatsapp, _get_ate
 
 # ─── TASK: lembrete de leads sem resposta ─────────────────────────────────────
 
+async def _daily_report():
+    """Envia relatório diário às 20h para os atendentes."""
+    await asyncio.sleep(90)
+    while True:
+        now = datetime.now()
+        target = now.replace(hour=20, minute=0, second=0, microsecond=0)
+        if now.hour >= 20:
+            target += timedelta(days=1)
+        await asyncio.sleep((target - now).total_seconds())
+
+        try:
+            today = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+            with DBSession(engine) as db:
+                leads = db.exec(select(Lead)).all()
+            hoje = [l for l in leads if l.created_at and l.created_at >= today]
+            total       = len(hoje)
+            convertidos = sum(1 for l in hoje if l.status == "convertido")
+            em_analise  = sum(1 for l in hoje if l.status == "em_analise")
+            perdidos    = sum(1 for l in hoje if l.status == "perdido")
+            boleto      = sum(1 for l in hoje if l.payment_type == "boleto")
+            cartao      = sum(1 for l in hoje if l.payment_type == "cartao_avista")
+            assistencia = sum(1 for l in hoje if l.payment_type == "assistencia")
+            loja        = get_config("store_name") or "Top Phone"
+            texto = (
+                f"📊 *RELATÓRIO DO DIA — {loja}*\n"
+                f"📅 {datetime.now().strftime('%d/%m/%Y')}\n\n"
+                f"👥 *Leads hoje:* {total}\n"
+                f"✅ Convertidos: {convertidos}\n"
+                f"🔄 Em análise: {em_analise}\n"
+                f"❌ Perdidos: {perdidos}\n\n"
+                f"💳 Boleto: {boleto}\n"
+                f"💰 Cartão/À vista: {cartao}\n"
+                f"🔧 Assistência: {assistencia}"
+            )
+            for atendente in _get_atendentes():
+                await send_whatsapp(atendente, texto, apply_delay=False)
+            print(f"[RELATÓRIO DIÁRIO] Enviado para {len(_get_atendentes())} atendente(s).")
+        except Exception as e:
+            print(f"[RELATÓRIO DIÁRIO] Erro: {e}")
+
+
 async def _check_unanswered_leads():
     """Background task: notifica atendentes sobre leads aguardando resposta."""
     await asyncio.sleep(30)  # aguarda o app subir antes de começar
@@ -92,9 +133,11 @@ async def lifespan(app: FastAPI):
         if not get_config(k):
             set_config(k, v)
 
-    task = asyncio.create_task(_check_unanswered_leads())
+    task1 = asyncio.create_task(_check_unanswered_leads())
+    task2 = asyncio.create_task(_daily_report())
     yield
-    task.cancel()
+    task1.cancel()
+    task2.cancel()
 
 
 app = FastAPI(title="Top Phone Bot", lifespan=lifespan)
@@ -214,8 +257,10 @@ async def webhook(request: Request, db: DBSession = Depends(get_session)):
 
     message_text = text_content if text_content else f"[{msg_type}]"
 
+    contact_name = data.get("pushName", "").strip()
+
     try:
-        await process_message(phone, message_text, media_type, db)
+        await process_message(phone, message_text, media_type, db, contact_name=contact_name)
     except Exception as e:
         import traceback
         print(f"[ERRO] {e}")

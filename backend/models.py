@@ -19,8 +19,8 @@ class Lead(SQLModel, table=True):
     financeira: Optional[str]    = None          # financeira utilizada no boleto
     last_message_at: Optional[datetime] = None   # última mensagem recebida do cliente
     notified_at: Optional[datetime]     = None   # último lembrete enviado ao atendente
-    created_at: datetime         = Field(default_factory=datetime.utcnow)
-    updated_at: datetime         = Field(default_factory=datetime.utcnow)
+    created_at: datetime         = Field(default_factory=datetime.now)
+    updated_at: datetime         = Field(default_factory=datetime.now)
 
 
 class Session(SQLModel, table=True):
@@ -32,7 +32,7 @@ class Session(SQLModel, table=True):
     doc_cpf: bool               = Field(default=False)
     doc_luz: bool               = Field(default=False)
     history: str                = Field(default="[]")
-    updated_at: datetime        = Field(default_factory=datetime.utcnow)
+    updated_at: datetime        = Field(default_factory=datetime.now)
 
 
 class Config(SQLModel, table=True):
@@ -45,4 +45,4 @@ class Document(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     name: str
     content: str
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=datetime.now)
