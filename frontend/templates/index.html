@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ store_name }} — Painel</title>
+<style>
+  :root {
+    --preto: #111111; --vermelho: #E02020; --vermelho-escuro: #B01818;
+    --branco: #FFFFFF; --cinza-bg: #F4F4F4; --cinza-card: #FAFAFA;
+    --cinza-borda: #E0E0E0; --cinza-texto: #555555;
+    --verde: #1D9E75; --amarelo: #D4860A; --azul: #1A6FB5; --roxo: #6B21A8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--cinza-bg); color: var(--preto); }
+
+  header { background: var(--preto); padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 56px; }
+  header .logo { color: var(--vermelho); font-weight: 900; font-size: 1.2rem; letter-spacing: 2px; text-transform: uppercase; }
+  header nav a { color: #AAA; text-decoration: none; margin-left: 1.5rem; font-size: .875rem; transition: color .15s; }
+  header nav a:hover, header nav a.active { color: var(--branco); }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #CCC; display: inline-block; margin-right: 6px; transition: background .3s; }
+  .status-dot.connected    { background: var(--verde); animation: pulse 2s infinite; }
+  .status-dot.disconnected { background: var(--vermelho); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+  main { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
+  .stat-card { background: var(--branco); border-radius: 10px; padding: 1.1rem 1rem; border: 1px solid var(--cinza-borda); }
+  .stat-card .num { font-size: 2rem; font-weight: 800; color: var(--preto); line-height: 1; }
+  .stat-card .label { font-size: .75rem; color: var(--cinza-texto); margin-top: 4px; text-transform: uppercase; letter-spacing: .04em; }
+  .stat-card.vermelho .num { color: var(--vermelho); }
+  .stat-card.verde .num   { color: var(--verde); }
+  .stat-card.azul .num    { color: var(--azul); }
+  .stat-card.amarelo .num { color: var(--amarelo); }
+
+  .filtros { display: flex; gap: .75rem; margin-bottom: 1.2rem; flex-wrap: wrap; align-items: center; }
+  .filtros select, .filtros input {
+    padding: .45rem .75rem; border: 1px solid var(--cinza-borda); border-radius: 6px;
+    font-size: .875rem; background: var(--branco); color: var(--preto);
+  }
+  .btn { padding: .45rem 1rem; border-radius: 6px; font-size: .875rem; font-weight: 600; cursor: pointer; border: none; transition: background .15s; }
+  .btn-primary { background: var(--vermelho); color: var(--branco); }
+  .btn-primary:hover { background: var(--vermelho-escuro); }
+  .btn-ghost { background: transparent; color: var(--cinza-texto); border: 1px solid var(--cinza-borda); }
+  .btn-ghost:hover { background: var(--cinza-bg); }
+
+  .tabela-wrap { background: var(--branco); border-radius: 10px; border: 1px solid var(--cinza-borda); overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 900px; }
+  th { background: var(--preto); color: var(--branco); padding: .75rem 1rem; text-align: left; font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; white-space: nowrap; }
+  td { padding: .7rem 1rem; border-bottom: 1px solid var(--cinza-borda); font-size: .84rem; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #F9F9F9; }
+
+  /* Badges de status */
+  .badge { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: .72rem; font-weight: 700; white-space: nowrap; }
+  .badge-novo                { background: #EEF6FF; color: var(--azul); }
+  .badge-em_analise          { background: #FFF7E6; color: var(--amarelo); }
+  .badge-aguardando_financeira{ background: #F3E6FF; color: var(--roxo); }
+  .badge-financeira_aprovada { background: #E6F8F2; color: var(--verde); }
+  .badge-financeira_reprovada{ background: #FFE6E6; color: var(--vermelho); }
+  .badge-convertido          { background: #E6F8F2; color: var(--verde); }
+  .badge-perdido             { background: #F4F4F4; color: #888; }
+  .badge-boleto              { background: #F3E6FF; color: var(--roxo); }
+  .badge-cartao              { background: #E6F8F2; color: var(--verde); }
+  .badge-assistencia         { background: #EEF6FF; color: var(--azul); }
+
+  .doc-check { color: var(--verde); font-weight: 700; }
+  .doc-x     { color: #CCC; }
+  .text-muted { color: var(--cinza-texto); }
+  .last-msg-warn { color: var(--vermelho); font-weight: 600; }
+
+  /* Modal */
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:100; justify-content:center; align-items:center; }
+  .modal-overlay.open { display:flex; }
+  .modal { background:var(--branco); border-radius:12px; padding:2rem; width:100%; max-width:520px; position:relative; max-height:90vh; overflow-y:auto; }
+  .modal h2 { font-size:1.1rem; margin-bottom:1.2rem; }
+  .modal label { display:block; font-size:.8rem; color:var(--cinza-texto); margin-bottom:4px; margin-top:1rem; text-transform:uppercase; letter-spacing:.04em; }
+  .modal input, .modal select, .modal textarea {
+    width:100%; padding:.5rem .75rem; border:1px solid var(--cinza-borda); border-radius:6px;
+    font-size:.875rem; font-family:inherit;
+  }
+  .modal textarea { resize:vertical; min-height:80px; }
+  .modal .actions { display:flex; gap:.75rem; margin-top:1.5rem; justify-content:flex-end; }
+  .close-btn { position:absolute; top:1rem; right:1rem; background:none; border:none; font-size:1.3rem; cursor:pointer; color:var(--cinza-texto); }
+  .modal-row-2 { display:grid; grid-template-columns:1fr 1fr; gap:.75rem; }
+
+  .empty { text-align:center; padding:3rem; color:var(--cinza-texto); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">{{ store_name }}</div>
+  <nav>
+    <span class="status-dot" id="statusDot" title="Status WhatsApp"></span>
+    <a href="/" class="active">CRM</a>
+    <a href="/config">Configurações</a>
+  </nav>
+</header>
+
+<main>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat-card vermelho">
+      <div class="num">{{ stats.total }}</div>
+      <div class="label">Total de Leads</div>
+    </div>
+    <div class="stat-card azul">
+      <div class="num">{{ stats.novo }}</div>
+      <div class="label">Novos</div>
+    </div>
+    <div class="stat-card amarelo">
+      <div class="num">{{ stats.em_analise }}</div>
+      <div class="label">Em Análise</div>
+    </div>
+    <div class="stat-card verde">
+      <div class="num">{{ stats.convertido }}</div>
+      <div class="label">Convertidos</div>
+    </div>
+    <div class="stat-card">
+      <div class="num">{{ stats.boleto }}</div>
+      <div class="label">Boleto</div>
+    </div>
+    <div class="stat-card">
+      <div class="num">{{ stats.cartao }}</div>
+      <div class="label">Cartão/À vista</div>
+    </div>
+    <div class="stat-card">
+      <div class="num">{{ stats.assistencia }}</div>
+      <div class="label">Assistência</div>
+    </div>
+  </div>
+
+  <!-- FILTROS -->
+  <div class="filtros">
+    <select id="filtroStatus" onchange="filtrar()">
+      <option value="">Todos os status</option>
+      <option value="novo">Novo</option>
+      <option value="em_analise">Em análise</option>
+      <option value="aguardando_financeira">Aguard. Financeira</option>
+      <option value="financeira_aprovada">Financeira Aprovada</option>
+      <option value="financeira_reprovada">Financeira Reprovada</option>
+      <option value="convertido">Convertido</option>
+      <option value="perdido">Perdido</option>
+    </select>
+    <select id="filtroPayment" onchange="filtrar()">
+      <option value="">Todas as formas</option>
+      <option value="boleto">Boleto</option>
+      <option value="cartao_avista">Cartão / À vista</option>
+      <option value="assistencia">Assistência</option>
+    </select>
+    <input type="text" id="filtroPhone" oninput="filtrar()" placeholder="Buscar por telefone..." style="max-width:200px;">
+    <button class="btn btn-ghost" onclick="location.reload()">↻ Atualizar</button>
+  </div>
+
+  <!-- TABELA -->
+  <div class="tabela-wrap">
+    {% if leads %}
+    <table id="tabelaLeads">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Telefone</th>
+          <th>Nome</th>
+          <th>Pagamento</th>
+          <th>Docs</th>
+          <th>Status</th>
+          <th>Atribuído</th>
+          <th>Última msg</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for lead in leads %}
+        {% set mins_ago = ((now - lead.last_message_at).total_seconds() / 60)|int if lead.last_message_at else -1 %}
+        <tr data-status="{{ lead.status }}" data-payment="{{ lead.payment_type or '' }}" data-phone="{{ lead.phone }}">
+          <td class="text-muted">{{ lead.id }}</td>
+          <td><strong>{{ lead.phone }}</strong></td>
+          <td>{{ lead.name or '—' }}</td>
+          <td>
+            {% if lead.payment_type == 'boleto' %}
+              <span class="badge badge-boleto">Boleto</span>
+            {% elif lead.payment_type == 'cartao_avista' %}
+              <span class="badge badge-cartao">Cartão/À vista</span>
+            {% elif lead.payment_type == 'assistencia' %}
+              <span class="badge badge-assistencia">Assistência</span>
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+          <td style="font-size:.8rem;">
+            {% if lead.doc_rg  %}<span class="doc-check">RG✓</span>{% else %}<span class="doc-x">RG</span>{% endif %}
+            {% if lead.doc_cpf %}<span class="doc-check"> CPF✓</span>{% else %}<span class="doc-x"> CPF</span>{% endif %}
+            {% if lead.doc_luz %}<span class="doc-check"> Luz✓</span>{% else %}<span class="doc-x"> Luz</span>{% endif %}
+          </td>
+          <td>
+            <span class="badge badge-{{ lead.status }}">
+              {% if lead.status == 'novo' %}Novo
+              {% elif lead.status == 'em_analise' %}Em análise
+              {% elif lead.status == 'aguardando_financeira' %}Aguard. Financeira
+              {% elif lead.status == 'financeira_aprovada' %}Fin. Aprovada ✓
+              {% elif lead.status == 'financeira_reprovada' %}Fin. Reprovada ✗
+              {% elif lead.status == 'convertido' %}Convertido
+              {% elif lead.status == 'perdido' %}Perdido
+              {% else %}{{ lead.status }}{% endif %}
+            </span>
+            {% if lead.financeira %}
+              <br><small class="text-muted">{{ lead.financeira }}</small>
+            {% endif %}
+          </td>
+          <td class="text-muted" style="font-size:.82rem;">{{ lead.assigned_to or '—' }}</td>
+          <td style="font-size:.8rem;">
+            {% if lead.last_message_at %}
+              {% if mins_ago > 10 and lead.status == 'em_analise' %}
+                <span class="last-msg-warn" title="{{ lead.last_message_at.strftime('%d/%m %H:%M') }}">{{ mins_ago }}min atrás ⚠️</span>
+              {% else %}
+                <span class="text-muted">{{ lead.last_message_at.strftime('%d/%m %H:%M') }}</span>
+              {% endif %}
+            {% else %}
+              <span class="text-muted">—</span>
+            {% endif %}
+          </td>
+          <td>
+            <button class="btn btn-ghost" style="padding:.3rem .7rem;font-size:.8rem;"
+              onclick="abrirModal(
+                {{ lead.id }},
+                '{{ lead.phone }}',
+                '{{ lead.name or '' }}',
+                '{{ lead.status }}',
+                '{{ lead.assigned_to or '' }}',
+                '{{ lead.financeira or '' }}',
+                '{{ lead.payment_type or '' }}',
+                '{{ lead.notes or '' }}'
+              )">
+              Editar
+            </button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty">
+      <div style="font-size:2rem;margin-bottom:.5rem;">📭</div>
+      Nenhum lead ainda. Quando o bot qualificar o primeiro cliente, ele aparece aqui.
+    </div>
+    {% endif %}
+  </div>
+
+</main>
+
+<!-- MODAL EDIÇÃO -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <button class="close-btn" onclick="fecharModal()">×</button>
+    <h2>Editar Lead</h2>
+    <input type="hidden" id="editId">
+
+    <label>Telefone</label>
+    <input type="text" id="editPhone" disabled style="background:#F4F4F4;">
+
+    <div class="modal-row-2">
+      <div>
+        <label>Nome do cliente</label>
+        <input type="text" id="editName" placeholder="Nome completo">
+      </div>
+      <div>
+        <label>Atribuído a</label>
+        <input type="text" id="editAssigned" placeholder="Nome do atendente">
+      </div>
+    </div>
+
+    <div class="modal-row-2">
+      <div>
+        <label>Status</label>
+        <select id="editStatus">
+          <option value="novo">Novo</option>
+          <option value="em_analise">Em análise</option>
+          <option value="aguardando_financeira">Aguardando Financeira</option>
+          <option value="financeira_aprovada">Financeira Aprovada ✓</option>
+          <option value="financeira_reprovada">Financeira Reprovada ✗</option>
+          <option value="convertido">Convertido</option>
+          <option value="perdido">Perdido</option>
+        </select>
+      </div>
+      <div>
+        <label>Financeira</label>
+        <select id="editFinanceira">
+          <option value="">— Nenhuma —</option>
+          {% for fin in financeiras %}
+          <option value="{{ fin }}">{{ fin }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+
+    <label>Observações</label>
+    <textarea id="editNotes" placeholder="Anotações sobre o lead..."></textarea>
+
+    <div class="actions">
+      <button class="btn btn-ghost" onclick="fecharModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarLead()">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── Injetar variáveis do Jinja no JS ────────────────────────
+const FINANCEIRAS = [{% for f in financeiras %}"{{ f }}"{% if not loop.last %},{% endif %}{% endfor %}];
+
+// ─── Modal ────────────────────────────────────────────────────
+function abrirModal(id, phone, name, status, assigned, financeira, payment, notes) {
+  document.getElementById('editId').value        = id;
+  document.getElementById('editPhone').value     = phone;
+  document.getElementById('editName').value      = name;
+  document.getElementById('editStatus').value    = status;
+  document.getElementById('editAssigned').value  = assigned;
+  document.getElementById('editNotes').value     = notes;
+
+  const selFin = document.getElementById('editFinanceira');
+  selFin.value = financeira;
+  if (selFin.value !== financeira && financeira) {
+    const opt = document.createElement('option');
+    opt.value = financeira; opt.textContent = financeira;
+    selFin.appendChild(opt); selFin.value = financeira;
+  }
+
+  document.getElementById('modal').classList.add('open');
+}
+
+function fecharModal() {
+  document.getElementById('modal').classList.remove('open');
+}
+
+async function salvarLead() {
+  const id = document.getElementById('editId').value;
+  const payload = {
+    name:        document.getElementById('editName').value,
+    status:      document.getElementById('editStatus').value,
+    assigned_to: document.getElementById('editAssigned').value,
+    financeira:  document.getElementById('editFinanceira').value,
+    notes:       document.getElementById('editNotes').value,
+  };
+  await fetch(`/api/leads/${id}`, {
+    method: 'PATCH',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify(payload),
+  });
+  fecharModal();
+  location.reload();
+}
+
+// ─── Filtros ──────────────────────────────────────────────────
+function filtrar() {
+  const status  = document.getElementById('filtroStatus').value;
+  const payment = document.getElementById('filtroPayment').value;
+  const phone   = document.getElementById('filtroPhone').value.toLowerCase();
+
+  document.querySelectorAll('#tabelaLeads tbody tr').forEach(tr => {
+    const okStatus  = !status  || tr.dataset.status  === status;
+    const okPayment = !payment || tr.dataset.payment === payment;
+    const okPhone   = !phone   || tr.dataset.phone.includes(phone);
+    tr.style.display = (okStatus && okPayment && okPhone) ? '' : 'none';
+  });
+}
+
+// ─── Status WhatsApp ──────────────────────────────────────────
+function checkWAStatus() {
+  const dot = document.getElementById('statusDot');
+  fetch('/api/whatsapp/status')
+    .then(r => r.json())
+    .then(d => {
+      dot.className = 'status-dot ' + (d.connected ? 'connected' : 'disconnected');
+      dot.title     = d.connected
+        ? `WhatsApp conectado (${d.state})`
+        : `WhatsApp desconectado — ${d.detail || d.state}`;
+    })
+    .catch(() => { dot.className = 'status-dot disconnected'; dot.title = 'Erro ao verificar'; });
+}
+checkWAStatus();
+setInterval(checkWAStatus, 15000);
+
+// Auto-refresh a cada 60s
+setTimeout(() => location.reload(), 60000);
+</script>
+</body>
+</html>

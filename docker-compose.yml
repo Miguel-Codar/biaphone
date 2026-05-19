@@ -1,0 +1,23 @@
+version: "3.9"
+
+# ─── Para duplicar para um novo cliente ────────────────────────────────────────
+# 1. Copie esta pasta inteira com outro nome (ex: clienteX/)
+# 2. Edite o .env com as credenciais do novo cliente
+# 3. Mude `container_name` e a porta host abaixo (ex: "8001:8000")
+# 4. Execute: docker compose up -d --build
+# ──────────────────────────────────────────────────────────────────────────────
+
+services:
+  topphone:
+    build: .
+    container_name: topphone_bot
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+      - ./.env:/app/.env
+    environment:
+      - DATABASE_URL=sqlite:////app/data/topphone.db
+    env_file:
+      - .env
