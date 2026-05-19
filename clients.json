@@ -1,0 +1,12 @@
+[
+  {
+    "name": "topphone",
+    "host": "72.60.251.111",
+    "user": "root",
+    "port": 22,
+    "path": "/root/biaphone",
+    "ssh_key": null,
+    "app_port": 8000,
+    "notes": "Top Phone — Belo Jardim-PE"
+  }
+]
