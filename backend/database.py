@@ -47,3 +47,9 @@ def set_config(key: str, value: str) -> None:
             cfg = Config(key=key, value=value)
         session.add(cfg)
         session.commit()
+
+
+def get_documents() -> list:
+    from .models import Document
+    with DBSession(engine) as session:
+        return session.exec(select(Document).order_by(Document.created_at)).all()

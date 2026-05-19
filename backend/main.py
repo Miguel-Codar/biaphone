@@ -8,7 +8,7 @@ from typing import Optional
 from contextlib import asynccontextmanager
 
 import httpx
-from fastapi import FastAPI, Request, Depends, HTTPException, Form
+from fastapi import FastAPI, Request, Depends, HTTPException, Form, UploadFile, File
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -18,7 +18,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from .database import create_db, get_session, engine, get_config, set_config
-from .models import Lead, Config
+from .models import Lead, Config, Document
 from .bot import process_message, DEFAULT_CUSTOM_PROMPT, send_whatsapp, _get_atendentes
 
 
@@ -510,6 +510,57 @@ async def setup_webhook(request: Request):
 # ═══════════════════════════════════════════════════════════════
 # MISC
 # ═══════════════════════════════════════════════════════════════
+
+# ═══════════════════════════════════════════════════════════════
+# DOCUMENTOS DA LOJA
+# ═══════════════════════════════════════════════════════════════
+
+@app.get("/api/docs")
+async def list_docs():
+    with DBSession(engine) as db:
+        docs = db.exec(select(Document).order_by(Document.created_at.desc())).all()
+    return [{"id": d.id, "name": d.name, "created_at": d.created_at.isoformat()} for d in docs]
+
+
+@app.post("/api/docs")
+async def upload_doc(file: UploadFile = File(...)):
+    content_bytes = await file.read()
+    name = file.filename or "documento"
+
+    if name.lower().endswith(".pdf"):
+        try:
+            import pypdf
+            reader = pypdf.PdfReader(io.BytesIO(content_bytes))
+            text = "\n".join(
+                page.extract_text() for page in reader.pages if page.extract_text()
+            )
+        except Exception as e:
+            raise HTTPException(status_code=422, detail=f"Erro ao ler PDF: {e}")
+    else:
+        text = content_bytes.decode("utf-8", errors="replace")
+
+    text = text.strip()
+    if not text:
+        raise HTTPException(status_code=422, detail="Documento vazio ou sem texto extraível.")
+
+    with DBSession(engine) as db:
+        doc = Document(name=name, content=text)
+        db.add(doc)
+        db.commit()
+        db.refresh(doc)
+        return {"id": doc.id, "name": doc.name, "chars": len(text)}
+
+
+@app.delete("/api/docs/{doc_id}")
+async def delete_doc(doc_id: int):
+    with DBSession(engine) as db:
+        doc = db.get(Document, doc_id)
+        if not doc:
+            raise HTTPException(status_code=404, detail="Documento não encontrado")
+        db.delete(doc)
+        db.commit()
+    return {"ok": True}
+
 
 @app.get("/api/config/default_prompt")
 async def default_prompt():

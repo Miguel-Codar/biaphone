@@ -86,6 +86,25 @@
   .prompt-actions { display: flex; justify-content: flex-end; margin-top: .5rem; }
   .link-btn { background: none; border: none; color: var(--azul); font-size: .8rem; cursor: pointer; text-decoration: underline; padding: 0; }
   .badge-info { display: inline-block; background: #EEF6FF; color: var(--azul); font-size: .75rem; font-weight: 600; padding: 2px 8px; border-radius: 12px; }
+
+  /* Checklist de setup */
+  .checklist { list-style: none; display: flex; flex-direction: column; gap: .5rem; }
+  .checklist li { display: flex; align-items: center; gap: .6rem; font-size: .875rem; }
+  .check-icon { font-size: 1rem; width: 20px; text-align: center; flex-shrink: 0; }
+  .check-label { color: var(--preto); }
+  .check-label.pending { color: var(--cinza-texto); }
+
+  /* Documentos */
+  .doc-list { display: flex; flex-direction: column; gap: .5rem; margin-top: .75rem; }
+  .doc-item { display: flex; align-items: center; justify-content: space-between; padding: .5rem .75rem; background: var(--cinza-bg); border-radius: 6px; border: 1px solid var(--cinza-borda); }
+  .doc-item-name { font-size: .875rem; font-weight: 500; }
+  .doc-item-meta { font-size: .75rem; color: var(--cinza-texto); }
+  .doc-delete { background: none; border: none; color: var(--cinza-texto); cursor: pointer; font-size: 1rem; padding: .2rem .4rem; border-radius: 4px; transition: color .15s; }
+  .doc-delete:hover { color: var(--vermelho); }
+  .upload-area { display: flex; gap: .75rem; align-items: center; margin-top: .75rem; flex-wrap: wrap; }
+  .upload-area input[type="file"] { flex: 1; min-width: 0; padding: .45rem .6rem; border: 1px dashed var(--cinza-borda); border-radius: 6px; font-size: .85rem; background: var(--branco); }
+  .upload-area input[type="file"]:focus { outline: none; border-color: var(--vermelho); }
+  .doc-empty { font-size: .85rem; color: var(--cinza-texto); padding: .75rem 0; }
 </style>
 </head>
 <body>
@@ -103,6 +122,20 @@
   {% if request.query_params.get('saved') %}
   <div class="alert-success">✅ Configurações salvas! As alterações entram em vigor imediatamente.</div>
   {% endif %}
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- CHECKLIST DE SETUP                            -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div class="card" id="setupChecklist">
+    <h2><span class="icon">✅</span> Checklist de Setup</h2>
+    <ul class="checklist" id="checklistItems">
+      <li><span class="check-icon">⏳</span><span class="check-label pending" id="chk-loja">Nome da loja configurado</span></li>
+      <li><span class="check-icon">⏳</span><span class="check-label pending" id="chk-evo">Evolution API configurada</span></li>
+      <li><span class="check-icon">⏳</span><span class="check-label pending" id="chk-groq">Chave Groq configurada</span></li>
+      <li><span class="check-icon">⏳</span><span class="check-label pending" id="chk-atendente">Atendente configurado</span></li>
+      <li><span class="check-icon">⏳</span><span class="check-label pending" id="chk-whatsapp">WhatsApp conectado</span></li>
+    </ul>
+  </div>
 
   <!-- ══════════════════════════════════════════════ -->
   <!-- STATUS + QR CODE (fora do form)               -->
@@ -281,10 +314,66 @@
     <button type="submit" class="btn-primary">💾 Salvar configurações</button>
   </form>
 
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- DOCUMENTOS DA LOJA (fora do form)             -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div class="card">
+    <h2><span class="icon">📄</span> Documentos da Loja</h2>
+    <p style="font-size:.875rem;color:var(--cinza-texto);margin-bottom:.5rem;">
+      Envie arquivos <strong>.txt</strong> ou <strong>.pdf</strong> com informações da loja — preços, modelos disponíveis, regras, promoções etc.
+      O bot usa esses documentos como referência ao responder os clientes.
+    </p>
+
+    <div class="upload-area">
+      <input type="file" id="docFile" accept=".txt,.pdf" multiple>
+      <button type="button" class="btn-verde" onclick="uploadDocs()">⬆ Enviar</button>
+    </div>
+    <div id="uploadStatus" style="font-size:.8rem;margin-top:.4rem;"></div>
+
+    <div id="docList" class="doc-list">
+      <p class="doc-empty">Carregando documentos...</p>
+    </div>
+  </div>
+
 </main>
 
 <script>
 document.getElementById('webhookUrl').textContent = window.location.origin + '/webhook/whatsapp';
+
+// ─── Checklist de setup ────────────────────────────────────────
+function setCheck(id, ok, label) {
+  const el   = document.getElementById(id);
+  const icon = el.previousElementSibling;
+  if (ok) {
+    icon.textContent = '✅';
+    el.classList.remove('pending');
+    el.textContent = label + ' ✓';
+  } else {
+    icon.textContent = '❌';
+    el.classList.add('pending');
+    el.textContent = label;
+  }
+}
+
+function runChecklist() {
+  const cfg = {
+    loja:      '{{ cfg.store_name }}',
+    evo_host:  '{{ cfg.EVOLUTION_HOST }}',
+    evo_key:   '{{ cfg.EVOLUTION_API_KEY }}',
+    evo_inst:  '{{ cfg.EVOLUTION_INSTANCE }}',
+    groq_key:  '{{ cfg.GROQ_API_KEY }}',
+    atendente: '{{ cfg.atendentes }}',
+  };
+  setCheck('chk-loja',      !!cfg.loja && cfg.loja !== 'Top Phone',  'Nome da loja configurado');
+  setCheck('chk-evo',       !!(cfg.evo_host && cfg.evo_key && cfg.evo_inst), 'Evolution API configurada');
+  setCheck('chk-groq',      !!(cfg.groq_key && cfg.groq_key.startsWith('gsk_')), 'Chave Groq configurada');
+  setCheck('chk-atendente', !!(cfg.atendente && cfg.atendente.length > 5), 'Atendente configurado');
+
+  fetch('/api/whatsapp/status').then(r => r.json()).then(d => {
+    setCheck('chk-whatsapp', d.connected, 'WhatsApp conectado');
+  }).catch(() => {});
+}
+runChecklist();
 
 function copiarWebhook() {
   navigator.clipboard.writeText(document.getElementById('webhookUrl').textContent).then(() => {
@@ -369,6 +458,62 @@ function gerarQR() {
     btn.disabled = false; btn.textContent = '📷 Tentar novamente';
   });
 }
+
+// ─── Documentos ─────────────────────────────────────────────
+async function carregarDocs() {
+  const list = document.getElementById('docList');
+  try {
+    const docs = await fetch('/api/docs').then(r => r.json());
+    if (!docs.length) {
+      list.innerHTML = '<p class="doc-empty">Nenhum documento enviado ainda.</p>';
+      return;
+    }
+    list.innerHTML = docs.map(d => `
+      <div class="doc-item" id="doc-${d.id}">
+        <div>
+          <div class="doc-item-name">📄 ${d.name}</div>
+          <div class="doc-item-meta">${new Date(d.created_at).toLocaleString('pt-BR')}</div>
+        </div>
+        <button class="doc-delete" onclick="deletarDoc(${d.id})" title="Remover">🗑</button>
+      </div>`).join('');
+  } catch(e) {
+    list.innerHTML = '<p class="doc-empty" style="color:var(--vermelho)">Erro ao carregar documentos.</p>';
+  }
+}
+
+async function uploadDocs() {
+  const input  = document.getElementById('docFile');
+  const status = document.getElementById('uploadStatus');
+  if (!input.files.length) { status.textContent = '⚠️ Selecione um arquivo primeiro.'; return; }
+
+  status.style.color = 'var(--cinza-texto)';
+  status.textContent = '⏳ Enviando...';
+
+  const results = [];
+  for (const file of input.files) {
+    const form = new FormData();
+    form.append('file', file);
+    try {
+      const r = await fetch('/api/docs', { method: 'POST', body: form });
+      const d = await r.json();
+      if (r.ok) results.push(`✅ ${file.name} (${d.chars} caracteres)`);
+      else      results.push(`❌ ${file.name}: ${d.detail}`);
+    } catch(e) {
+      results.push(`❌ ${file.name}: erro de conexão`);
+    }
+  }
+  status.textContent = results.join(' | ');
+  input.value = '';
+  carregarDocs();
+}
+
+async function deletarDoc(id) {
+  if (!confirm('Remover este documento?')) return;
+  await fetch(`/api/docs/${id}`, { method: 'DELETE' });
+  carregarDocs();
+}
+
+carregarDocs();
 
 // ─── Configurar Webhook ─────────────────────────────────────
 function configurarWebhook() {

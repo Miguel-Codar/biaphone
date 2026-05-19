@@ -9,7 +9,7 @@ import httpx
 from sqlmodel import Session as DBSession, select
 
 from .models import Session, Lead
-from .database import get_config
+from .database import get_config, get_documents
 
 GROQ_API_KEY       = os.getenv("GROQ_API_KEY", "")
 GROQ_MODEL         = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
@@ -24,7 +24,9 @@ _PROMPT_HEADER = (
     "Responda SOMENTE com JSON neste formato, sem texto fora dele:\n"
     '{{"intent": "BOLETO" | "CARTAO_AVISTA" | "ASSISTENCIA" | "INDEFINIDO",'
     ' "reply": "<mensagem humanizada>"}}\n\n'
-    "Regra obrigatória: responda SOMENTE o JSON, sem qualquer texto fora dele."
+    "Regras obrigatórias:\n"
+    "- Responda SOMENTE o JSON, sem qualquer texto fora dele.\n"
+    "- No campo reply, use \\n\\n (dupla quebra de linha) para separar parágrafos distintos — cada parágrafo será enviado como uma mensagem separada no WhatsApp."
 )
 
 DEFAULT_CUSTOM_PROMPT = """Regras:
@@ -69,7 +71,23 @@ def _build_system_prompt() -> str:
     tone      = get_config("conversation_tone") or "informal"
     tone_rule = _TONE_RULES.get(tone, _TONE_RULES["informal"])
 
-    return f"{header}\n\nTom da conversa: {tone_rule}\n\n{custom}"
+    # Documentos adicionais da loja (enviados pelo painel)
+    docs = get_documents()
+    docs_section = ""
+    if docs:
+        MAX_CHARS = 4000
+        parts = []
+        total = 0
+        for d in docs:
+            chunk = f"[{d.name}]\n{d.content.strip()}"
+            if total + len(chunk) > MAX_CHARS:
+                break
+            parts.append(chunk)
+            total += len(chunk)
+        if parts:
+            docs_section = "\n\nInformações adicionais da loja (use como referência):\n" + "\n---\n".join(parts)
+
+    return f"{header}\n\nTom da conversa: {tone_rule}\n\n{custom}{docs_section}"
 
 
 def _get_timeout() -> int:
@@ -181,6 +199,17 @@ async def send_whatsapp(number: str, text: str, apply_delay: bool = True):
         print(f"[EVOLUTION] sendText → {r.status_code} {r.text[:200]}")
 
 
+async def send_whatsapp_parts(number: str, text: str, apply_delay: bool = True):
+    """Divide a mensagem em parágrafos (\\n\\n) e envia cada um separadamente."""
+    parts = [p.strip() for p in text.split("\n\n") if p.strip()]
+    if not parts:
+        return
+    for i, part in enumerate(parts):
+        await send_whatsapp(number, part, apply_delay=(i == 0 and apply_delay))
+        if i < len(parts) - 1:
+            await asyncio.sleep(1.0)
+
+
 async def notify_atendente(lead: Lead):
     """Notifica todos os atendentes configurados sobre um novo lead."""
     docs = []
@@ -261,7 +290,7 @@ async def process_message(phone: str, message: str, msg_type: str, db: DBSession
         reply, transferir = await _boleto_step(sess, message, is_media, db)
         push_history(sess, "assistant", reply)
         save_session(sess, db)
-        await send_whatsapp(phone, reply)
+        await send_whatsapp_parts(phone, reply)
         if transferir:
             await _transferir(phone, sess, db)
         return
@@ -288,7 +317,7 @@ async def process_message(phone: str, message: str, msg_type: str, db: DBSession
         sess.payment_type = "cartao_avista"
         _sync_lead(phone, sess, db)
         save_session(sess, db)
-        await send_whatsapp(phone, reply)
+        await send_whatsapp_parts(phone, reply)
         await _transferir(phone, sess, db)
         return
 
@@ -297,12 +326,12 @@ async def process_message(phone: str, message: str, msg_type: str, db: DBSession
         sess.payment_type = "assistencia"
         _sync_lead(phone, sess, db)
         save_session(sess, db)
-        await send_whatsapp(phone, reply)
+        await send_whatsapp_parts(phone, reply)
         await _transferir(phone, sess, db)
         return
 
     save_session(sess, db)
-    await send_whatsapp(phone, reply)
+    await send_whatsapp_parts(phone, reply)
 
 
 async def _boleto_step(sess: Session, message: str, is_media: bool, db: DBSession):
