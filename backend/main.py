@@ -574,6 +574,32 @@ async def default_prompt():
     return {"prompt": DEFAULT_CUSTOM_PROMPT}
 
 
+@app.get("/api/prompt-history")
+async def get_prompt_history():
+    raw = get_config("prompt_history") or "[]"
+    try:
+        return json.loads(raw)
+    except Exception:
+        return []
+
+
+@app.post("/api/prompt-history")
+async def save_prompt_backup(request: Request):
+    body = await request.json()
+    text = body.get("prompt", "").strip()
+    if not text:
+        raise HTTPException(400, "Prompt vazio")
+    raw = get_config("prompt_history") or "[]"
+    try:
+        history = json.loads(raw)
+    except Exception:
+        history = []
+    history.insert(0, {"ts": datetime.now().strftime("%d/%m/%Y %H:%M"), "prompt": text})
+    history = history[:10]
+    set_config("prompt_history", json.dumps(history, ensure_ascii=False))
+    return {"ok": True, "total": len(history)}
+
+
 @app.get("/api/status")
 async def status():
     return {

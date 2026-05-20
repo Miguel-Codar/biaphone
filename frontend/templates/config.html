@@ -3,111 +3,213 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{{ cfg.store_name or 'Top Phone' }} — Configurações</title>
+<title>{{ cfg.store_name or 'Biaphone' }} — Configurações</title>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <style>
-  :root {
-    --preto: #111111; --vermelho: #E02020; --vermelho-escuro: #B01818;
-    --branco: #FFFFFF; --cinza-bg: #F4F4F4; --cinza-borda: #E0E0E0;
-    --cinza-texto: #555555; --verde: #1D9E75; --verde-bg: #E6F8F2;
-    --amarelo: #D4860A; --azul: #1A6FB5;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--cinza-bg); color: var(--preto); }
+:root {
+  --bg:#0F0F0F; --surface:#181818; --surface2:#222;
+  --border:#2E2E2E; --border-h:#444;
+  --text:#F0F0F0; --muted:#777; --muted2:#555;
+  --red:#E02020; --red-d:#B01818; --red-g:linear-gradient(135deg,#E02020,#8B0000);
+  --red-glow:rgba(224,32,32,.35);
+  --green:#1D9E75; --yellow:#D4860A; --blue:#4A9EE0;
+  --r:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);}
 
-  header { background: var(--preto); padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 56px; }
-  header .logo { color: var(--vermelho); font-weight: 900; font-size: 1.2rem; letter-spacing: 2px; text-transform: uppercase; }
-  header nav a { color: #AAA; text-decoration: none; margin-left: 1.5rem; font-size: .875rem; }
-  header nav a:hover, header nav a.active { color: var(--branco); }
+/* ── Header ── */
+header{
+  background:linear-gradient(180deg,#1A1A1A 0%,#111 100%);
+  border-bottom:1px solid var(--border);
+  height:58px;padding:0 2rem;display:flex;align-items:center;
+  position:sticky;top:0;z-index:40;
+}
+.logo{
+  background:var(--red-g);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  font-weight:900;font-size:1.15rem;letter-spacing:3px;text-transform:uppercase;margin-right:auto;
+}
+header nav a{
+  color:var(--muted);text-decoration:none;
+  padding:.4rem .85rem;border-radius:6px;font-size:.82rem;
+  transition:color .15s,background .15s;margin-left:.25rem;
+}
+header nav a:hover{color:var(--text);background:#222;}
+header nav a.active{color:var(--text);background:#2A2A2A;}
 
-  main { max-width: 760px; margin: 2rem auto; padding: 0 1.5rem 4rem; }
+/* ── Layout ── */
+main{max-width:780px;margin:2rem auto;padding:0 1.5rem 5rem;}
 
-  .card { background: var(--branco); border-radius: 10px; border: 1px solid var(--cinza-borda); padding: 2rem; margin-bottom: 1.5rem; }
-  .card h2 { font-size: 1rem; font-weight: 700; margin-bottom: 1.25rem; display: flex; align-items: center; gap: .5rem; }
-  .card h2 .icon { background: var(--vermelho); color: var(--branco); border-radius: 6px; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; font-size: .85rem; flex-shrink: 0; }
+/* ── Alert ── */
+.alert-ok{
+  background:rgba(29,158,117,.1);border:1px solid rgba(29,158,117,.3);
+  color:var(--green);border-radius:8px;padding:.75rem 1rem;
+  margin-bottom:1.5rem;font-size:.875rem;display:flex;align-items:center;gap:.6rem;
+}
 
-  label { display: block; font-size: .78rem; color: var(--cinza-texto); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 5px; margin-top: 1rem; }
-  label:first-of-type { margin-top: 0; }
-  input[type="text"], input[type="password"], input[type="number"], select, textarea {
-    width: 100%; padding: .55rem .75rem; border: 1px solid var(--cinza-borda);
-    border-radius: 6px; font-size: .9rem; font-family: inherit; transition: border-color .15s; background: var(--branco);
-  }
-  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--vermelho); }
-  input[type="password"] { letter-spacing: .1em; }
-  textarea { resize: vertical; min-height: 200px; line-height: 1.5; }
+/* ── Card ── */
+.card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r);margin-bottom:1.25rem;overflow:hidden;
+  transition:border-color .2s;
+}
+.card:hover{border-color:var(--border-h);}
+.card-head{
+  display:flex;align-items:center;gap:.75rem;
+  padding:1rem 1.5rem;border-bottom:1px solid var(--border);
+  background:linear-gradient(90deg,rgba(224,32,32,.04) 0%,transparent 60%);
+}
+.card-head .icon{
+  width:32px;height:32px;border-radius:8px;
+  background:var(--red-g);display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.card-head h2{font-size:.9rem;font-weight:700;color:var(--text);}
+.card-body{padding:1.5rem;}
 
-  .hint { font-size: .78rem; color: var(--cinza-texto); margin-top: 4px; }
+/* ── Checklist ── */
+.checklist{list-style:none;display:flex;flex-direction:column;gap:.6rem;}
+.chk-item{
+  display:flex;align-items:center;gap:.75rem;
+  padding:.6rem .85rem;border-radius:7px;
+  background:var(--surface2);border:1px solid var(--border);
+  font-size:.85rem;transition:border-color .15s;
+}
+.chk-item.ok{border-color:rgba(29,158,117,.4);background:rgba(29,158,117,.05);}
+.chk-item.fail{border-color:rgba(224,32,32,.3);background:rgba(224,32,32,.04);}
+.chk-icon{width:18px;height:18px;flex-shrink:0;}
 
-  .payment-toggles { display: flex; gap: 1rem; margin-top: .5rem; flex-wrap: wrap; }
-  .toggle-item { display: flex; align-items: center; gap: .5rem; padding: .6rem 1rem; border: 1px solid var(--cinza-borda); border-radius: 8px; cursor: pointer; transition: all .15s; user-select: none; }
-  .toggle-item:hover { border-color: var(--vermelho); }
-  .toggle-item input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--vermelho); cursor: pointer; }
-  .toggle-item.active { border-color: var(--verde); background: var(--verde-bg); }
-  .toggle-item span { font-size: .875rem; font-weight: 600; }
+/* ── Status WA ── */
+.status-bar{
+  display:flex;align-items:center;gap:1rem;
+  padding:.9rem 1.1rem;border-radius:8px;border:1px solid var(--border);
+  background:var(--surface2);margin-bottom:1rem;
+}
+.status-bar .dot{width:10px;height:10px;border-radius:50%;background:var(--muted2);flex-shrink:0;transition:background .3s;}
+.status-bar .dot.connected{background:var(--green);box-shadow:0 0 8px rgba(29,158,117,.5);animation:pulse 2s infinite;}
+.status-bar .dot.disconnected{background:var(--red);}
+.status-bar .dot.connecting{background:var(--yellow);animation:pulse 1s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.status-label{font-weight:600;font-size:.875rem;}
+.status-sub{font-size:.78rem;color:var(--muted);margin-left:auto;}
 
-  .status-bar { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.25rem; border-radius: 8px; border: 1px solid var(--cinza-borda); margin-bottom: 1rem; }
-  .status-dot { width: 12px; height: 12px; border-radius: 50%; background: #CCC; flex-shrink: 0; transition: background .3s; }
-  .status-dot.connected    { background: var(--verde); animation: pulse 2s infinite; }
-  .status-dot.disconnected { background: var(--vermelho); }
-  .status-dot.connecting   { background: var(--amarelo); animation: pulse 1s infinite; }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
-  .status-label { font-weight: 600; font-size: .9rem; }
-  .status-label.connected    { color: var(--verde); }
-  .status-label.disconnected { color: var(--vermelho); }
-  .status-label.connecting   { color: var(--amarelo); }
-  .status-sub { font-size: .8rem; color: var(--cinza-texto); margin-left: auto; }
+.qr-area{display:flex;flex-direction:column;align-items:center;gap:1rem;margin-top:1rem;}
+.qr-box{
+  width:220px;height:220px;border:2px dashed var(--border);border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--muted);font-size:.85rem;text-align:center;padding:1rem;
+  background:var(--surface2);
+}
+.qr-box img{width:200px;height:200px;object-fit:contain;border-radius:6px;}
+.qr-hint{font-size:.78rem;color:var(--muted);text-align:center;max-width:300px;line-height:1.5;}
 
-  .qr-area { display: flex; flex-direction: column; align-items: center; gap: 1rem; }
-  .qr-img-wrap { width: 220px; height: 220px; border: 2px dashed var(--cinza-borda); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--cinza-texto); font-size: .85rem; text-align: center; padding: 1rem; }
-  .qr-img-wrap img { width: 200px; height: 200px; object-fit: contain; border-radius: 6px; }
-  .qr-hint { font-size: .8rem; color: var(--cinza-texto); text-align: center; max-width: 300px; }
+/* ── Forms ── */
+.field{margin-bottom:.9rem;}
+.field label,.field-label{
+  display:block;font-size:.7rem;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;
+}
+input[type="text"],input[type="password"],input[type="number"],select,textarea{
+  width:100%;padding:.55rem .8rem;
+  background:var(--surface2);border:1px solid var(--border);border-radius:7px;
+  font-size:.875rem;font-family:inherit;color:var(--text);
+  transition:border-color .15s,box-shadow .15s;
+}
+input:focus,select:focus,textarea:focus{
+  outline:none;border-color:var(--red);
+  box-shadow:0 0 0 3px rgba(224,32,32,.12);
+}
+select option{background:var(--surface2);}
+textarea{resize:vertical;min-height:200px;line-height:1.6;}
+.hint{font-size:.72rem;color:var(--muted2);margin-top:4px;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;}
+@media(max-width:560px){.row2,.row3{grid-template-columns:1fr;}}
+.sep{border:none;border-top:1px solid var(--border);margin:1.25rem 0;}
 
-  .btn-primary { background: var(--vermelho); color: var(--branco); border: none; padding: .7rem 2rem; border-radius: 6px; font-size: .95rem; font-weight: 700; cursor: pointer; margin-top: 1.5rem; transition: background .15s; }
-  .btn-primary:hover { background: var(--vermelho-escuro); }
-  .btn-secondary { background: var(--branco); color: var(--preto); border: 1px solid var(--cinza-borda); padding: .6rem 1.4rem; border-radius: 6px; font-size: .875rem; font-weight: 600; cursor: pointer; transition: all .15s; }
-  .btn-secondary:hover { border-color: #999; }
-  .btn-verde { background: var(--verde); color: var(--branco); border: none; padding: .6rem 1.4rem; border-radius: 6px; font-size: .875rem; font-weight: 700; cursor: pointer; transition: background .15s; }
-  .btn-verde:hover { background: #17835f; }
-  .btn-verde:disabled { background: #AAA; cursor: not-allowed; }
-  .btn-azul { background: var(--azul); color: var(--branco); border: none; padding: .6rem 1.4rem; border-radius: 6px; font-size: .875rem; font-weight: 700; cursor: pointer; transition: background .15s; }
-  .btn-azul:hover { background: #155fa0; }
+/* ── Toggle pagamento ── */
+.pay-grid{display:flex;gap:.75rem;flex-wrap:wrap;}
+.pay-toggle{
+  display:flex;align-items:center;gap:.5rem;
+  padding:.5rem 1rem;border:1px solid var(--border);border-radius:8px;
+  cursor:pointer;transition:all .15s;user-select:none;font-size:.85rem;
+}
+.pay-toggle:hover{border-color:var(--border-h);}
+.pay-toggle.active{border-color:var(--green);background:rgba(29,158,117,.08);color:var(--green);}
+.pay-toggle input{width:15px;height:15px;accent-color:var(--red);}
 
-  .alert-success { background: var(--verde-bg); border: 1px solid #9FE1CB; color: #0D5E3F; border-radius: 8px; padding: .75rem 1rem; margin-bottom: 1.5rem; font-size: .9rem; }
-  .alert-info    { background: #EEF6FF; border: 1px solid #B3D4F5; color: #1a4a80; border-radius: 8px; padding: .75rem 1rem; margin-bottom: 1rem; font-size: .875rem; }
+/* ── Botões ── */
+.btn{
+  display:inline-flex;align-items:center;gap:.45rem;
+  padding:.55rem 1.25rem;border-radius:7px;font-size:.875rem;
+  font-weight:700;cursor:pointer;border:none;
+  transition:all .15s;
+}
+.btn-red{background:var(--red-g);color:#FFF;}
+.btn-red:hover{box-shadow:0 4px 20px var(--red-glow);transform:translateY(-1px);}
+.btn-green{background:linear-gradient(135deg,var(--green),#0D7A5A);color:#FFF;}
+.btn-green:hover{box-shadow:0 4px 20px rgba(29,158,117,.35);transform:translateY(-1px);}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);}
+.btn-ghost:hover{color:var(--text);border-color:var(--border-h);}
+.btn-blue{background:linear-gradient(135deg,var(--blue),#1A5FA0);color:#FFF;}
+.btn-blue:hover{box-shadow:0 4px 20px rgba(74,158,224,.35);transform:translateY(-1px);}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none !important;box-shadow:none !important;}
+.toggle-pass{
+  font-size:.72rem;color:var(--muted);cursor:pointer;
+  float:right;margin-top:-1.3rem;padding:.15rem .35rem;user-select:none;
+}
+.toggle-pass:hover{color:var(--text);}
 
-  .toggle-pass { cursor: pointer; color: var(--cinza-texto); font-size:.8rem; float:right; margin-top:-1.4rem; padding:.2rem .4rem; user-select:none; }
+/* ── Prompt actions row ── */
+.prompt-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;}
+.prompt-btns{display:flex;gap:.5rem;}
 
-  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-  .row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
-  @media(max-width: 540px) { .row-2, .row-3 { grid-template-columns: 1fr; } }
-  .section-sep { border: none; border-top: 1px solid var(--cinza-borda); margin: 1.25rem 0; }
-  .prompt-actions { display: flex; justify-content: flex-end; margin-top: .5rem; }
-  .link-btn { background: none; border: none; color: var(--azul); font-size: .8rem; cursor: pointer; text-decoration: underline; padding: 0; }
-  .badge-info { display: inline-block; background: #EEF6FF; color: var(--azul); font-size: .75rem; font-weight: 600; padding: 2px 8px; border-radius: 12px; }
+/* ── Documentos ── */
+.doc-list{display:flex;flex-direction:column;gap:.5rem;margin-top:.75rem;}
+.doc-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.5rem .75rem;background:var(--surface2);border-radius:7px;
+  border:1px solid var(--border);
+}
+.doc-name{font-size:.85rem;font-weight:500;}
+.doc-meta{font-size:.72rem;color:var(--muted);}
+.doc-del{
+  background:none;border:none;color:var(--muted);cursor:pointer;
+  padding:.2rem .4rem;border-radius:4px;transition:color .15s;
+}
+.doc-del:hover{color:var(--red);}
+.upload-area{display:flex;gap:.75rem;align-items:center;margin-top:.75rem;flex-wrap:wrap;}
+.upload-area input[type="file"]{
+  flex:1;min-width:0;padding:.4rem .6rem;
+  border:1px dashed var(--border);border-radius:7px;
+  font-size:.82rem;background:var(--surface2);color:var(--muted);cursor:pointer;
+}
+.upload-area input[type="file"]:focus{outline:none;border-color:var(--red);}
+.upload-status{font-size:.78rem;margin-top:.4rem;color:var(--muted);}
 
-  /* Checklist de setup */
-  .checklist { list-style: none; display: flex; flex-direction: column; gap: .5rem; }
-  .checklist li { display: flex; align-items: center; gap: .6rem; font-size: .875rem; }
-  .check-icon { font-size: 1rem; width: 20px; text-align: center; flex-shrink: 0; }
-  .check-label { color: var(--preto); }
-  .check-label.pending { color: var(--cinza-texto); }
-
-  /* Documentos */
-  .doc-list { display: flex; flex-direction: column; gap: .5rem; margin-top: .75rem; }
-  .doc-item { display: flex; align-items: center; justify-content: space-between; padding: .5rem .75rem; background: var(--cinza-bg); border-radius: 6px; border: 1px solid var(--cinza-borda); }
-  .doc-item-name { font-size: .875rem; font-weight: 500; }
-  .doc-item-meta { font-size: .75rem; color: var(--cinza-texto); }
-  .doc-delete { background: none; border: none; color: var(--cinza-texto); cursor: pointer; font-size: 1rem; padding: .2rem .4rem; border-radius: 4px; transition: color .15s; }
-  .doc-delete:hover { color: var(--vermelho); }
-  .upload-area { display: flex; gap: .75rem; align-items: center; margin-top: .75rem; flex-wrap: wrap; }
-  .upload-area input[type="file"] { flex: 1; min-width: 0; padding: .45rem .6rem; border: 1px dashed var(--cinza-borda); border-radius: 6px; font-size: .85rem; background: var(--branco); }
-  .upload-area input[type="file"]:focus { outline: none; border-color: var(--vermelho); }
-  .doc-empty { font-size: .85rem; color: var(--cinza-texto); padding: .75rem 0; }
+/* ── Modal overlay ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;justify-content:center;align-items:center;backdrop-filter:blur(4px);}
+.overlay.open{display:flex;}
+.modal{
+  background:var(--surface);border:1px solid var(--border);border-radius:14px;
+  padding:2rem;width:100%;max-width:580px;position:relative;max-height:85vh;overflow-y:auto;
+  box-shadow:0 20px 60px rgba(0,0,0,.6);
+}
+.modal h2{font-size:1rem;font-weight:700;margin-bottom:1.25rem;}
+.modal .close-btn{position:absolute;top:1rem;right:1rem;background:none;border:none;color:var(--muted);cursor:pointer;}
+.hist-item{
+  border:1px solid var(--border);border-radius:8px;padding:.85rem;margin-bottom:.6rem;
+  background:var(--surface2);
+}
+.hist-ts{font-size:.72rem;color:var(--muted);margin-bottom:.5rem;}
+.hist-preview{font-size:.78rem;color:var(--text);white-space:pre-wrap;max-height:80px;overflow:hidden;opacity:.75;}
+.hist-btns{display:flex;justify-content:flex-end;margin-top:.6rem;}
 </style>
 </head>
 <body>
 
 <header>
-  <div class="logo">{{ cfg.store_name or 'Top Phone' }}</div>
+  <div class="logo">{{ cfg.store_name or 'Biaphone' }}</div>
   <nav>
     <a href="/">CRM</a>
     <a href="/config" class="active">Configurações</a>
@@ -117,328 +219,432 @@
 <main>
 
   {% if request.query_params.get('saved') %}
-  <div class="alert-success">✅ Configurações salvas! As alterações entram em vigor imediatamente.</div>
+  <div class="alert-ok">
+    <i data-lucide="check-circle" style="width:16px;height:16px;flex-shrink:0;"></i>
+    Configurações salvas com sucesso.
+  </div>
   {% endif %}
 
-  <!-- ══════════════════════════════════════════════ -->
-  <!-- CHECKLIST DE SETUP                            -->
-  <!-- ══════════════════════════════════════════════ -->
-  <div class="card" id="setupChecklist">
-    <h2><span class="icon">✅</span> Checklist de Setup</h2>
-    <ul class="checklist" id="checklistItems">
-      <li><span class="check-icon">⏳</span><span class="check-label pending" id="chk-loja">Nome da loja configurado</span></li>
-      <li><span class="check-icon">⏳</span><span class="check-label pending" id="chk-atendente">Número do atendente configurado</span></li>
-      <li><span class="check-icon">⏳</span><span class="check-label pending" id="chk-whatsapp">WhatsApp conectado</span></li>
-    </ul>
-  </div>
-
-  <!-- ══════════════════════════════════════════════ -->
-  <!-- STATUS + QR CODE (fora do form)               -->
-  <!-- ══════════════════════════════════════════════ -->
+  <!-- ── CHECKLIST ── -->
   <div class="card">
-    <h2><span class="icon">📱</span> Status do WhatsApp</h2>
-
-    <div class="status-bar" id="statusBar">
-      <div class="status-dot" id="statusDot"></div>
-      <span class="status-label" id="statusLabel">Verificando...</span>
-      <span class="status-sub" id="statusSub"></span>
+    <div class="card-head">
+      <div class="icon"><i data-lucide="clipboard-check" style="width:16px;height:16px;color:#FFF;"></i></div>
+      <h2>Checklist de Setup</h2>
     </div>
-
-    <div style="display:flex;gap:.75rem;margin-bottom:1rem;flex-wrap:wrap;">
-      <button type="button" class="btn-verde" id="btnQR" onclick="gerarQR()">📷 Gerar QR Code</button>
-    </div>
-
-    <div class="qr-area" id="qrArea" style="display:none;">
-      <div class="qr-img-wrap" id="qrWrap">
-        <span id="qrPlaceholder">Carregando QR Code...</span>
-        <img id="qrImg" src="" alt="QR Code" style="display:none;">
-      </div>
-      <p class="qr-hint">
-        Abra o WhatsApp → Menu → Aparelhos conectados → Conectar aparelho → Escaneie este QR Code
-      </p>
+    <div class="card-body">
+      <ul class="checklist">
+        <li class="chk-item" id="chk-loja">
+          <i data-lucide="clock" class="chk-icon" style="color:var(--muted);"></i>
+          <span>Nome da loja configurado</span>
+        </li>
+        <li class="chk-item" id="chk-atendente">
+          <i data-lucide="clock" class="chk-icon" style="color:var(--muted);"></i>
+          <span>Número do atendente configurado</span>
+        </li>
+        <li class="chk-item" id="chk-whatsapp">
+          <i data-lucide="clock" class="chk-icon" style="color:var(--muted);"></i>
+          <span>WhatsApp conectado</span>
+        </li>
+      </ul>
     </div>
   </div>
 
-  <!-- ══════════════════════════════════════════════ -->
-  <!-- FORM                                          -->
-  <!-- ══════════════════════════════════════════════ -->
+  <!-- ── STATUS WHATSAPP ── -->
+  <div class="card">
+    <div class="card-head">
+      <div class="icon"><i data-lucide="smartphone" style="width:16px;height:16px;color:#FFF;"></i></div>
+      <h2>Status do WhatsApp</h2>
+    </div>
+    <div class="card-body">
+      <div class="status-bar">
+        <span class="dot" id="waDot"></span>
+        <span class="status-label" id="waLabel">Verificando...</span>
+        <span class="status-sub" id="waSub"></span>
+      </div>
+      <div style="display:flex;gap:.6rem;">
+        <button type="button" class="btn btn-green" id="btnQR" onclick="gerarQR()">
+          <i data-lucide="qr-code" style="width:14px;height:14px;"></i> Gerar QR Code
+        </button>
+      </div>
+      <div class="qr-area" id="qrArea" style="display:none;">
+        <div class="qr-box" id="qrBox">
+          <span id="qrPlaceholder">Carregando...</span>
+          <img id="qrImg" src="" alt="QR Code" style="display:none;">
+        </div>
+        <p class="qr-hint">Abra o WhatsApp → Menu → Aparelhos conectados → Conectar aparelho → Escaneie</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── FORM ── -->
   <form method="POST" action="/config">
 
     <!-- LOJA -->
     <div class="card">
-      <h2><span class="icon">🏪</span> Dados da Loja</h2>
-      <div class="row-2">
-        <div>
-          <label>Nome da loja</label>
-          <input type="text" name="store_name" value="{{ cfg.store_name }}" placeholder="Top Phone" required>
-        </div>
-        <div>
-          <label>Endereço</label>
-          <input type="text" name="store_address" value="{{ cfg.store_address }}" placeholder="Rua Exemplo, 100 — Cidade-UF">
+      <div class="card-head">
+        <div class="icon"><i data-lucide="store" style="width:16px;height:16px;color:#FFF;"></i></div>
+        <h2>Dados da Loja</h2>
+      </div>
+      <div class="card-body">
+        <div class="row2">
+          <div class="field">
+            <label>Nome da loja</label>
+            <input type="text" name="store_name" value="{{ cfg.store_name }}" placeholder="Top Phone" required>
+          </div>
+          <div class="field">
+            <label>Endereço</label>
+            <input type="text" name="store_address" value="{{ cfg.store_address }}" placeholder="Rua Ex., 100 — Cidade-UF">
+          </div>
         </div>
       </div>
     </div>
 
     <!-- BOT -->
     <div class="card">
-      <h2><span class="icon">🤖</span> Comportamento do Bot</h2>
+      <div class="card-head">
+        <div class="icon"><i data-lucide="bot" style="width:16px;height:16px;color:#FFF;"></i></div>
+        <h2>Comportamento do Bot</h2>
+      </div>
+      <div class="card-body">
+        <div class="row3">
+          <div class="field">
+            <label>Tom da conversa</label>
+            <select name="conversation_tone">
+              <option value="informal" {% if cfg.conversation_tone == 'informal' %}selected{% endif %}>Informal</option>
+              <option value="formal"   {% if cfg.conversation_tone == 'formal'   %}selected{% endif %}>Formal</option>
+              <option value="neutro"   {% if cfg.conversation_tone == 'neutro'   %}selected{% endif %}>Neutro</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Delay da resposta (seg)</label>
+            <input type="number" name="response_delay" value="{{ cfg.response_delay }}" min="0" max="30">
+            <p class="hint">Simula tempo de digitação</p>
+          </div>
+          <div class="field">
+            <label>Timeout de reset (min)</label>
+            <input type="number" name="session_timeout" value="{{ cfg.session_timeout }}" min="5" max="1440">
+            <p class="hint">Reset após inatividade no status TRANSFERIDO</p>
+          </div>
+        </div>
 
-      <div class="row-3">
-        <div>
-          <label>Tom da conversa</label>
-          <select name="conversation_tone">
-            <option value="informal" {% if cfg.conversation_tone == 'informal' %}selected{% endif %}>Informal</option>
-            <option value="formal"   {% if cfg.conversation_tone == 'formal'   %}selected{% endif %}>Formal</option>
-            <option value="neutro"   {% if cfg.conversation_tone == 'neutro'   %}selected{% endif %}>Neutro</option>
-          </select>
+        <hr class="sep">
+
+        <div class="field">
+          <label>Formas de pagamento ativas</label>
+          <div class="pay-grid" style="margin-top:.5rem;">
+            <label class="pay-toggle {% if cfg.pay_boleto == '1' %}active{% endif %}" id="lbl-boleto">
+              <input type="checkbox" name="pay_boleto" value="1" {% if cfg.pay_boleto == '1' %}checked{% endif %} onchange="togglePay(this,'lbl-boleto')">
+              <i data-lucide="file-text" style="width:14px;height:14px;"></i> Boleto
+            </label>
+            <label class="pay-toggle {% if cfg.pay_cartao == '1' %}active{% endif %}" id="lbl-cartao">
+              <input type="checkbox" name="pay_cartao" value="1" {% if cfg.pay_cartao == '1' %}checked{% endif %} onchange="togglePay(this,'lbl-cartao')">
+              <i data-lucide="credit-card" style="width:14px;height:14px;"></i> Cartão / À vista
+            </label>
+            <label class="pay-toggle {% if cfg.pay_assistencia == '1' %}active{% endif %}" id="lbl-assistencia">
+              <input type="checkbox" name="pay_assistencia" value="1" {% if cfg.pay_assistencia == '1' %}checked{% endif %} onchange="togglePay(this,'lbl-assistencia')">
+              <i data-lucide="wrench" style="width:14px;height:14px;"></i> Assistência Técnica
+            </label>
+          </div>
         </div>
-        <div>
-          <label>Delay da resposta (seg)</label>
-          <input type="number" name="response_delay" value="{{ cfg.response_delay }}" min="0" max="30" placeholder="2">
-          <p class="hint">Tempo de espera antes do bot responder (simula digitação)</p>
-        </div>
-        <div>
-          <label>Timeout de reset (min)</label>
-          <input type="number" name="session_timeout" value="{{ cfg.session_timeout }}" min="5" max="1440" placeholder="30">
-          <p class="hint">Após esse tempo inativo no TRANSFERIDO, a sessão reinicia</p>
+
+        <hr class="sep">
+
+        <div class="field">
+          <div class="prompt-row">
+            <label style="margin:0;">Prompt do bot</label>
+            <div class="prompt-btns">
+              <button type="button" class="btn btn-ghost" style="font-size:.75rem;padding:.35rem .75rem;" onclick="restaurarPrompt()">
+                <i data-lucide="rotate-ccw" style="width:12px;height:12px;"></i> Padrão
+              </button>
+              <button type="button" class="btn btn-ghost" style="font-size:.75rem;padding:.35rem .75rem;" onclick="abrirHistorico()">
+                <i data-lucide="history" style="width:12px;height:12px;"></i> Histórico
+              </button>
+              <button type="button" class="btn btn-blue" style="font-size:.75rem;padding:.35rem .85rem;" onclick="salvarBackupPrompt()">
+                <i data-lucide="bookmark" style="width:12px;height:12px;"></i> Salvar backup
+              </button>
+            </div>
+          </div>
+          <textarea name="bot_prompt" id="botPrompt" style="margin-top:.5rem;">{{ cfg.bot_prompt }}</textarea>
+          <p class="hint">Regras e informações personalizadas da loja. O cabeçalho fixo com formato JSON não precisa ser incluído aqui.</p>
+          <div id="backupStatus" style="font-size:.75rem;margin-top:.35rem;"></div>
         </div>
       </div>
-
-      <label style="margin-top:1.25rem;">Formas de pagamento ativas</label>
-      <div class="payment-toggles">
-        <label class="toggle-item {% if cfg.pay_boleto == '1' %}active{% endif %}" id="lbl-boleto">
-          <input type="checkbox" name="pay_boleto" value="1" {% if cfg.pay_boleto == '1' %}checked{% endif %} onchange="toggleActive(this,'lbl-boleto')">
-          <span>💳 Boleto</span>
-        </label>
-        <label class="toggle-item {% if cfg.pay_cartao == '1' %}active{% endif %}" id="lbl-cartao">
-          <input type="checkbox" name="pay_cartao" value="1" {% if cfg.pay_cartao == '1' %}checked{% endif %} onchange="toggleActive(this,'lbl-cartao')">
-          <span>💰 Cartão / À vista</span>
-        </label>
-        <label class="toggle-item {% if cfg.pay_assistencia == '1' %}active{% endif %}" id="lbl-assistencia">
-          <input type="checkbox" name="pay_assistencia" value="1" {% if cfg.pay_assistencia == '1' %}checked{% endif %} onchange="toggleActive(this,'lbl-assistencia')">
-          <span>🔧 Assistência Técnica</span>
-        </label>
-      </div>
-
-      <label style="margin-top:1.5rem;">
-        Prompt do bot <span class="badge-info">texto livre</span>
-      </label>
-      <div class="prompt-actions">
-        <button type="button" class="link-btn" onclick="restaurarPrompt()">↩ Restaurar padrão</button>
-      </div>
-      <textarea name="bot_prompt" id="botPrompt">{{ cfg.bot_prompt }}</textarea>
-      <p class="hint">Parte editável do prompt (regras, informações da loja). O cabeçalho com o formato JSON é fixo e não precisa ser incluído aqui.</p>
     </div>
 
     <!-- ATENDIMENTO -->
     <div class="card">
-      <h2><span class="icon">👥</span> Atendimento & Notificações</h2>
-
-      <label>Números dos atendentes (para receber notificações)</label>
-      <input type="text" name="atendentes" value="{{ cfg.atendentes }}" placeholder="5581999999999,5581988888888">
-      <p class="hint">Números separados por vírgula (com DDI). Todos receberão alertas de novos leads e lembretes.</p>
-
-      <div class="row-2">
-        <div>
-          <label>Notificar após (minutos sem resposta)</label>
-          <input type="number" name="notification_timeout" value="{{ cfg.notification_timeout }}" min="1" max="60" placeholder="10">
-          <p class="hint">Lembrete enviado se o lead ficar sem resposta por esse tempo</p>
+      <div class="card-head">
+        <div class="icon"><i data-lucide="users" style="width:16px;height:16px;color:#FFF;"></i></div>
+        <h2>Atendimento e Notificações</h2>
+      </div>
+      <div class="card-body">
+        <div class="field">
+          <label>Números dos atendentes</label>
+          <input type="text" name="atendentes" value="{{ cfg.atendentes }}" placeholder="5581999999999,5581988888888">
+          <p class="hint">Separados por vírgula (com DDI). Recebem alertas de novos leads e o relatório diário.</p>
         </div>
-        <div>
-          <label>Financeiras disponíveis</label>
-          <input type="text" name="financeiras" value="{{ cfg.financeiras }}" placeholder="BV,Santander,Itaú,Bradesco">
-          <p class="hint">Separadas por vírgula — aparecerão como opção no CRM para leads de boleto</p>
+        <div class="row2">
+          <div class="field">
+            <label>Notificar após (min sem resposta)</label>
+            <input type="number" name="notification_timeout" value="{{ cfg.notification_timeout }}" min="1" max="60">
+          </div>
+          <div class="field">
+            <label>Financeiras disponíveis</label>
+            <input type="text" name="financeiras" value="{{ cfg.financeiras }}" placeholder="BV,Santander,Itaú,Bradesco">
+            <p class="hint">Separadas por vírgula</p>
+          </div>
         </div>
       </div>
     </div>
 
-    <button type="submit" class="btn-primary">💾 Salvar configurações</button>
+    <button type="submit" class="btn btn-red" style="width:100%;justify-content:center;padding:.75rem;">
+      <i data-lucide="save" style="width:15px;height:15px;"></i> Salvar configurações
+    </button>
+
   </form>
 
-  <!-- ══════════════════════════════════════════════ -->
-  <!-- DOCUMENTOS DA LOJA (fora do form)             -->
-  <!-- ══════════════════════════════════════════════ -->
-  <div class="card">
-    <h2><span class="icon">📄</span> Documentos da Loja</h2>
-    <p style="font-size:.875rem;color:var(--cinza-texto);margin-bottom:.5rem;">
-      Envie arquivos <strong>.txt</strong> ou <strong>.pdf</strong> com informações da loja — preços, modelos disponíveis, regras, promoções etc.
-      O bot usa esses documentos como referência ao responder os clientes.
-    </p>
-
-    <div class="upload-area">
-      <input type="file" id="docFile" accept=".txt,.pdf" multiple>
-      <button type="button" class="btn-verde" onclick="uploadDocs()">⬆ Enviar</button>
+  <!-- DOCUMENTOS -->
+  <div class="card" style="margin-top:1.25rem;">
+    <div class="card-head">
+      <div class="icon"><i data-lucide="file-text" style="width:16px;height:16px;color:#FFF;"></i></div>
+      <h2>Documentos da Loja</h2>
     </div>
-    <div id="uploadStatus" style="font-size:.8rem;margin-top:.4rem;"></div>
-
-    <div id="docList" class="doc-list">
-      <p class="doc-empty">Carregando documentos...</p>
+    <div class="card-body">
+      <p style="font-size:.85rem;color:var(--muted);margin-bottom:.75rem;">
+        Arquivos <strong style="color:var(--text);">.txt</strong> ou <strong style="color:var(--text);">.pdf</strong> com informações da loja — preços, modelos, promoções. O bot usa como referência.
+      </p>
+      <div class="upload-area">
+        <input type="file" id="docFile" accept=".txt,.pdf" multiple>
+        <button type="button" class="btn btn-green" onclick="uploadDocs()">
+          <i data-lucide="upload" style="width:14px;height:14px;"></i> Enviar
+        </button>
+      </div>
+      <div class="upload-status" id="uploadStatus"></div>
+      <div id="docList" class="doc-list">
+        <p style="font-size:.82rem;color:var(--muted);">Carregando...</p>
+      </div>
     </div>
   </div>
 
 </main>
 
+<!-- MODAL: Histórico de prompts -->
+<div class="overlay" id="ovHistorico">
+<div class="modal">
+  <button class="close-btn" onclick="document.getElementById('ovHistorico').classList.remove('open')">
+    <i data-lucide="x" style="width:16px;height:16px;"></i>
+  </button>
+  <h2>Histórico de Backups do Prompt</h2>
+  <div id="histList"><p style="color:var(--muted);font-size:.85rem;">Carregando...</p></div>
+</div>
+</div>
+
 <script>
-// ─── Checklist de setup ────────────────────────────────────────
-function setCheck(id, ok, label) {
-  const el   = document.getElementById(id);
-  const icon = el.previousElementSibling;
+lucide.createIcons();
+
+// ─── Checklist ───────────────────────────────────────────────
+function setChk(id, ok) {
+  const li   = document.getElementById(id);
+  const icon = li.querySelector('.chk-icon');
   if (ok) {
-    icon.textContent = '✅';
-    el.classList.remove('pending');
-    el.textContent = label + ' ✓';
+    li.classList.add('ok'); li.classList.remove('fail');
+    icon.setAttribute('data-lucide', 'check-circle');
+    icon.style.color = 'var(--green)';
   } else {
-    icon.textContent = '❌';
-    el.classList.add('pending');
-    el.textContent = label;
+    li.classList.add('fail'); li.classList.remove('ok');
+    icon.setAttribute('data-lucide', 'x-circle');
+    icon.style.color = 'var(--red)';
   }
+  lucide.createIcons();
 }
 
 function runChecklist() {
   const loja      = '{{ cfg.store_name }}';
   const atendente = '{{ cfg.atendentes }}';
-  setCheck('chk-loja',      loja.length > 1,                      'Nome da loja configurado');
-  setCheck('chk-atendente', atendente.length > 5,                  'Número do atendente configurado');
+  setChk('chk-loja',      loja.trim().length > 1);
+  setChk('chk-atendente', atendente.trim().length > 5);
   fetch('/api/whatsapp/status').then(r => r.json()).then(d => {
-    setCheck('chk-whatsapp', d.connected, 'WhatsApp conectado');
-  }).catch(() => {});
+    setChk('chk-whatsapp', d.connected);
+  }).catch(() => setChk('chk-whatsapp', false));
 }
 runChecklist();
 
-function togglePass(id, btn) {
-  const el = document.getElementById(id);
-  el.type = el.type === 'password' ? 'text' : 'password';
-  btn.textContent = el.type === 'password' ? 'mostrar' : 'ocultar';
-}
-
-function toggleActive(checkbox, lblId) {
-  document.getElementById(lblId).classList.toggle('active', checkbox.checked);
-}
-
-function restaurarPrompt() {
-  if (!confirm('Isso sobrescreve o prompt atual com o padrão. Continuar?')) return;
-  fetch('/api/config/default_prompt').then(r => r.json())
-    .then(d => { document.getElementById('botPrompt').value = d.prompt; })
-    .catch(() => alert('Erro ao buscar o prompt padrão.'));
-}
-
-// ─── Status WhatsApp ────────────────────────────────────────
+// ─── Status WhatsApp ─────────────────────────────────────────
 function atualizarStatus() {
   fetch('/api/whatsapp/status').then(r => r.json()).then(d => {
-    const dot   = document.getElementById('statusDot');
-    const label = document.getElementById('statusLabel');
-    const sub   = document.getElementById('statusSub');
-    dot.className   = 'status-dot';
-    label.className = 'status-label';
+    const dot   = document.getElementById('waDot');
+    const label = document.getElementById('waLabel');
+    const sub   = document.getElementById('waSub');
+    dot.className = 'dot';
     if (d.connected) {
-      dot.classList.add('connected'); label.classList.add('connected');
-      label.textContent = '✅ Conectado'; sub.textContent = `Estado: ${d.state}`;
+      dot.classList.add('connected');
+      label.textContent = 'Conectado'; sub.textContent = `Estado: ${d.state}`;
     } else if (d.state === 'connecting') {
-      dot.classList.add('connecting'); label.classList.add('connecting');
-      label.textContent = '⏳ Conectando...'; sub.textContent = '';
+      dot.classList.add('connecting');
+      label.textContent = 'Conectando...'; sub.textContent = '';
     } else if (d.state === 'unconfigured') {
-      label.textContent = '⚙️ Evolution API não configurada'; sub.textContent = '';
+      label.textContent = 'Evolution API não configurada'; sub.textContent = '';
     } else {
-      dot.classList.add('disconnected'); label.classList.add('disconnected');
-      label.textContent = '🔴 Desconectado'; sub.textContent = d.detail || `Estado: ${d.state}`;
+      dot.classList.add('disconnected');
+      label.textContent = 'Desconectado'; sub.textContent = d.detail || `Estado: ${d.state}`;
     }
-  }).catch(() => { document.getElementById('statusLabel').textContent = '⚠️ Erro ao verificar'; });
+  }).catch(() => {
+    document.getElementById('waLabel').textContent = 'Erro ao verificar';
+  });
 }
-atualizarStatus();
-setInterval(atualizarStatus, 8000);
+atualizarStatus(); setInterval(atualizarStatus, 8000);
 
-// ─── QR Code ────────────────────────────────────────────────
+// ─── QR Code ─────────────────────────────────────────────────
 function gerarQR() {
   const btn  = document.getElementById('btnQR');
   const area = document.getElementById('qrArea');
   const img  = document.getElementById('qrImg');
   const ph   = document.getElementById('qrPlaceholder');
-  btn.disabled = true; btn.textContent = '⏳ Aguarde...';
-  area.style.display = 'flex';
-  img.style.display  = 'none';
-  ph.style.display   = 'block';
-  ph.textContent     = 'Carregando QR Code...';
+  btn.disabled = true; btn.textContent = 'Aguarde...';
+  area.style.display = 'flex'; img.style.display = 'none'; ph.style.display = 'block';
+  ph.textContent = 'Carregando QR Code...';
 
   fetch('/api/whatsapp/qr').then(r => {
     if (!r.ok) return r.json().then(d => { throw new Error(d.detail || 'Erro'); });
     return r.json();
   }).then(d => {
     img.src = d.qr; img.style.display = 'block'; ph.style.display = 'none';
-    btn.textContent = '🔄 Novo QR'; btn.disabled = false;
-    // Polling para detectar conexão
+    btn.textContent = 'Novo QR Code'; btn.disabled = false;
+    lucide.createIcons();
     const poll = setInterval(() => {
       fetch('/api/whatsapp/status').then(r => r.json()).then(s => {
-        if (s.connected) {
-          clearInterval(poll);
-          area.style.display = 'none';
-          btn.textContent    = '📷 Gerar QR Code';
-          atualizarStatus();
-        }
+        if (s.connected) { clearInterval(poll); area.style.display = 'none'; atualizarStatus(); runChecklist(); }
       });
     }, 4000);
   }).catch(err => {
-    ph.textContent = '❌ ' + err.message; ph.style.display = 'block'; img.style.display = 'none';
-    btn.disabled = false; btn.textContent = '📷 Tentar novamente';
+    ph.textContent = err.message; ph.style.display = 'block'; img.style.display = 'none';
+    btn.disabled = false; btn.textContent = 'Tentar novamente';
+    lucide.createIcons();
   });
 }
 
-// ─── Documentos ─────────────────────────────────────────────
+// ─── Pagamento toggles ───────────────────────────────────────
+function togglePay(cb, id) {
+  document.getElementById(id).classList.toggle('active', cb.checked);
+}
+
+// ─── Prompt padrão ───────────────────────────────────────────
+function restaurarPrompt() {
+  if (!confirm('Substituir o prompt atual pelo padrão?')) return;
+  fetch('/api/config/default_prompt').then(r => r.json())
+    .then(d => { document.getElementById('botPrompt').value = d.prompt; })
+    .catch(() => alert('Erro ao buscar prompt padrão.'));
+}
+
+// ─── Backup de prompt ────────────────────────────────────────
+async function salvarBackupPrompt() {
+  const text   = document.getElementById('botPrompt').value.trim();
+  const status = document.getElementById('backupStatus');
+  if (!text) { status.style.color = 'var(--red)'; status.textContent = 'Prompt vazio.'; return; }
+  status.style.color = 'var(--muted)'; status.textContent = 'Salvando...';
+  try {
+    const r = await fetch('/api/prompt-history', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({prompt: text}),
+    });
+    const d = await r.json();
+    if (r.ok) {
+      status.style.color = 'var(--green)';
+      status.textContent = `Backup salvo. Total: ${d.total} backups.`;
+      setTimeout(() => status.textContent = '', 4000);
+    } else throw new Error(d.detail);
+  } catch(e) {
+    status.style.color = 'var(--red)'; status.textContent = `Erro: ${e.message}`;
+  }
+}
+
+async function abrirHistorico() {
+  document.getElementById('ovHistorico').classList.add('open');
+  const list = document.getElementById('histList');
+  list.innerHTML = '<p style="color:var(--muted);font-size:.85rem;">Carregando...</p>';
+  try {
+    const history = await fetch('/api/prompt-history').then(r => r.json());
+    if (!history.length) {
+      list.innerHTML = '<p style="color:var(--muted);font-size:.85rem;">Nenhum backup salvo ainda.</p>';
+      return;
+    }
+    list.innerHTML = history.map((h, i) => `
+      <div class="hist-item">
+        <div class="hist-ts">${h.ts}</div>
+        <pre class="hist-preview">${h.prompt.slice(0, 200)}${h.prompt.length > 200 ? '...' : ''}</pre>
+        <div class="hist-btns">
+          <button class="btn btn-blue" style="font-size:.75rem;padding:.35rem .85rem;" onclick="restaurarBackup(${i})">
+            Restaurar este
+          </button>
+        </div>
+      </div>`).join('');
+    window._promptHistory = history;
+    lucide.createIcons();
+  } catch(e) {
+    list.innerHTML = `<p style="color:var(--red);">Erro: ${e.message}</p>`;
+  }
+}
+
+function restaurarBackup(idx) {
+  if (!confirm('Substituir o prompt atual por este backup?')) return;
+  document.getElementById('botPrompt').value = window._promptHistory[idx].prompt;
+  document.getElementById('ovHistorico').classList.remove('open');
+  document.getElementById('backupStatus').style.color = 'var(--yellow)';
+  document.getElementById('backupStatus').textContent = 'Backup restaurado — clique em Salvar configurações para aplicar.';
+}
+
+document.getElementById('ovHistorico').addEventListener('click', e => {
+  if (e.target === document.getElementById('ovHistorico')) document.getElementById('ovHistorico').classList.remove('open');
+});
+
+// ─── Documentos ──────────────────────────────────────────────
 async function carregarDocs() {
   const list = document.getElementById('docList');
   try {
     const docs = await fetch('/api/docs').then(r => r.json());
-    if (!docs.length) {
-      list.innerHTML = '<p class="doc-empty">Nenhum documento enviado ainda.</p>';
-      return;
-    }
+    if (!docs.length) { list.innerHTML = '<p style="font-size:.82rem;color:var(--muted2);">Nenhum documento enviado ainda.</p>'; return; }
     list.innerHTML = docs.map(d => `
       <div class="doc-item" id="doc-${d.id}">
         <div>
-          <div class="doc-item-name">📄 ${d.name}</div>
-          <div class="doc-item-meta">${new Date(d.created_at).toLocaleString('pt-BR')}</div>
+          <div class="doc-name">${d.name}</div>
+          <div class="doc-meta">${new Date(d.created_at).toLocaleString('pt-BR')}</div>
         </div>
-        <button class="doc-delete" onclick="deletarDoc(${d.id})" title="Remover">🗑</button>
+        <button class="doc-del" onclick="deletarDoc(${d.id})" title="Remover">
+          <i data-lucide="trash-2" style="width:14px;height:14px;"></i>
+        </button>
       </div>`).join('');
+    lucide.createIcons();
   } catch(e) {
-    list.innerHTML = '<p class="doc-empty" style="color:var(--vermelho)">Erro ao carregar documentos.</p>';
+    list.innerHTML = '<p style="color:var(--red);font-size:.82rem;">Erro ao carregar documentos.</p>';
   }
 }
 
 async function uploadDocs() {
   const input  = document.getElementById('docFile');
   const status = document.getElementById('uploadStatus');
-  if (!input.files.length) { status.textContent = '⚠️ Selecione um arquivo primeiro.'; return; }
-
-  status.style.color = 'var(--cinza-texto)';
-  status.textContent = '⏳ Enviando...';
-
+  if (!input.files.length) { status.textContent = 'Selecione um arquivo primeiro.'; return; }
+  status.style.color = 'var(--muted)'; status.textContent = 'Enviando...';
   const results = [];
   for (const file of input.files) {
-    const form = new FormData();
-    form.append('file', file);
+    const form = new FormData(); form.append('file', file);
     try {
-      const r = await fetch('/api/docs', { method: 'POST', body: form });
+      const r = await fetch('/api/docs', {method:'POST', body:form});
       const d = await r.json();
-      if (r.ok) results.push(`✅ ${file.name} (${d.chars} caracteres)`);
-      else      results.push(`❌ ${file.name}: ${d.detail}`);
-    } catch(e) {
-      results.push(`❌ ${file.name}: erro de conexão`);
-    }
+      results.push(r.ok ? `${file.name} (${d.chars} chars)` : `${file.name}: ${d.detail}`);
+    } catch { results.push(`${file.name}: erro`); }
   }
-  status.textContent = results.join(' | ');
-  input.value = '';
-  carregarDocs();
+  status.style.color = 'var(--green)'; status.textContent = results.join(' | ');
+  input.value = ''; carregarDocs();
 }
 
 async function deletarDoc(id) {
   if (!confirm('Remover este documento?')) return;
-  await fetch(`/api/docs/${id}`, { method: 'DELETE' });
+  await fetch(`/api/docs/${id}`, {method:'DELETE'});
   carregarDocs();
 }
 
 carregarDocs();
-
-
 </script>
 </body>
 </html>

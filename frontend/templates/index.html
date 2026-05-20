@@ -3,97 +3,212 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{{ store_name }} — Painel</title>
+<title>{{ store_name }} — CRM</title>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 <style>
-  :root {
-    --preto: #111111; --vermelho: #E02020; --vermelho-escuro: #B01818;
-    --branco: #FFFFFF; --cinza-bg: #F4F4F4; --cinza-card: #FAFAFA;
-    --cinza-borda: #E0E0E0; --cinza-texto: #555555;
-    --verde: #1D9E75; --amarelo: #D4860A; --azul: #1A6FB5; --roxo: #6B21A8;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--cinza-bg); color: var(--preto); }
+:root {
+  --bg:#0F0F0F; --surface:#181818; --surface2:#222;
+  --border:#2E2E2E; --border-h:#444;
+  --text:#F0F0F0; --muted:#777; --muted2:#555;
+  --red:#E02020; --red-d:#B01818; --red-g:linear-gradient(135deg,#E02020,#8B0000);
+  --red-glow:rgba(224,32,32,.35);
+  --green:#1D9E75; --yellow:#D4860A; --blue:#4A9EE0; --purple:#9B6FD4;
+  --r:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
 
-  header { background: var(--preto); padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 56px; }
-  header .logo { color: var(--vermelho); font-weight: 900; font-size: 1.2rem; letter-spacing: 2px; text-transform: uppercase; }
-  header nav a { color: #AAA; text-decoration: none; margin-left: 1.5rem; font-size: .875rem; transition: color .15s; }
-  header nav a:hover, header nav a.active { color: var(--branco); }
-  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #CCC; display: inline-block; margin-right: 6px; transition: background .3s; }
-  .status-dot.connected    { background: var(--verde); animation: pulse 2s infinite; }
-  .status-dot.disconnected { background: var(--vermelho); }
-  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+/* ── Header ── */
+header{
+  background:linear-gradient(180deg,#1A1A1A 0%,#111 100%);
+  border-bottom:1px solid var(--border);
+  height:58px;padding:0 2rem;display:flex;align-items:center;
+  position:sticky;top:0;z-index:40;
+  backdrop-filter:blur(12px);
+}
+.logo{
+  background:var(--red-g);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  font-weight:900;font-size:1.15rem;letter-spacing:3px;text-transform:uppercase;margin-right:auto;
+}
+header nav{display:flex;align-items:center;gap:.25rem;}
+header nav a{
+  color:var(--muted);text-decoration:none;
+  padding:.4rem .85rem;border-radius:6px;font-size:.82rem;letter-spacing:.02em;
+  transition:color .15s,background .15s;
+}
+header nav a:hover{color:var(--text);background:#222;}
+header nav a.active{color:var(--text);background:#2A2A2A;}
+.wa-badge{
+  display:flex;align-items:center;gap:.4rem;
+  font-size:.75rem;color:var(--muted);margin-right:1rem;
+  padding:.3rem .7rem;border-radius:20px;border:1px solid var(--border);
+}
+.wa-badge .dot{width:7px;height:7px;border-radius:50%;background:var(--muted2);transition:background .3s;}
+.wa-badge .dot.connected{background:var(--green);box-shadow:0 0 6px var(--green);animation:pulse 2s infinite;}
+.wa-badge .dot.disconnected{background:var(--red);}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 
-  main { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+/* ── Layout ── */
+main{max-width:1440px;margin:0 auto;padding:1.5rem 2rem 4rem;}
 
-  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 1rem; margin-bottom: 1.5rem; }
-  .stat-card { background: var(--branco); border-radius: 10px; padding: 1.1rem 1rem; border: 1px solid var(--cinza-borda); }
-  .stat-card .num { font-size: 2rem; font-weight: 800; color: var(--preto); line-height: 1; }
-  .stat-card .label { font-size: .75rem; color: var(--cinza-texto); margin-top: 4px; text-transform: uppercase; letter-spacing: .04em; }
-  .stat-card.vermelho .num { color: var(--vermelho); }
-  .stat-card.verde .num   { color: var(--verde); }
-  .stat-card.azul .num    { color: var(--azul); }
-  .stat-card.amarelo .num { color: var(--amarelo); }
+/* ── Stats ── */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.75rem;margin-bottom:1.5rem;}
+.scard{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  padding:1.1rem 1rem;position:relative;overflow:hidden;
+  transition:border-color .2s,transform .2s;cursor:default;
+}
+.scard:hover{border-color:var(--border-h);transform:translateY(-2px);}
+.scard::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:var(--accent,var(--border));
+}
+.scard.red{--accent:var(--red-g);}
+.scard.green{--accent:linear-gradient(90deg,var(--green),#0D7A5A);}
+.scard.yellow{--accent:linear-gradient(90deg,var(--yellow),#A66400);}
+.scard.blue{--accent:linear-gradient(90deg,var(--blue),#2A5FA0);}
+.scard.purple{--accent:linear-gradient(90deg,var(--purple),#5B3A9A);}
+.scard .n{font-size:2.2rem;font-weight:800;line-height:1;color:var(--text);}
+.scard .l{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-top:5px;}
 
-  .filtros { display: flex; gap: .75rem; margin-bottom: 1.2rem; flex-wrap: wrap; align-items: center; }
-  .filtros select, .filtros input {
-    padding: .45rem .75rem; border: 1px solid var(--cinza-borda); border-radius: 6px;
-    font-size: .875rem; background: var(--branco); color: var(--preto);
-  }
-  .btn { padding: .45rem 1rem; border-radius: 6px; font-size: .875rem; font-weight: 600; cursor: pointer; border: none; transition: background .15s; }
-  .btn-primary { background: var(--vermelho); color: var(--branco); }
-  .btn-primary:hover { background: var(--vermelho-escuro); }
-  .btn-ghost { background: transparent; color: var(--cinza-texto); border: 1px solid var(--cinza-borda); }
-  .btn-ghost:hover { background: var(--cinza-bg); }
+/* ── Toolbar ── */
+.toolbar{
+  display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;flex-wrap:wrap;
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  padding:.75rem 1rem;
+}
+.toolbar-sep{width:1px;height:24px;background:var(--border);flex-shrink:0;}
 
-  .tabela-wrap { background: var(--branco); border-radius: 10px; border: 1px solid var(--cinza-borda); overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; min-width: 900px; }
-  th { background: var(--preto); color: var(--branco); padding: .75rem 1rem; text-align: left; font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; white-space: nowrap; }
-  td { padding: .7rem 1rem; border-bottom: 1px solid var(--cinza-borda); font-size: .84rem; vertical-align: middle; }
-  tr:last-child td { border-bottom: none; }
-  tr:hover td { background: #F9F9F9; }
+.pill{
+  display:inline-flex;align-items:center;gap:.4rem;
+  padding:.35rem .85rem;border-radius:20px;font-size:.78rem;font-weight:600;
+  background:transparent;color:var(--muted);border:1px solid var(--border);
+  cursor:pointer;transition:all .15s;white-space:nowrap;
+}
+.pill:hover{color:var(--text);border-color:var(--border-h);}
+.pill.active{background:var(--red-g);color:#FFF;border-color:transparent;box-shadow:0 0 12px var(--red-glow);}
+.pill.pill-assist.active{background:linear-gradient(135deg,var(--blue),#1A5FA0);box-shadow:0 0 12px rgba(74,158,224,.35);}
+.pill svg{opacity:.75;}
 
-  /* Badges de status */
-  .badge { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: .72rem; font-weight: 700; white-space: nowrap; }
-  .badge-novo                { background: #EEF6FF; color: var(--azul); }
-  .badge-em_analise          { background: #FFF7E6; color: var(--amarelo); }
-  .badge-aguardando_financeira{ background: #F3E6FF; color: var(--roxo); }
-  .badge-financeira_aprovada { background: #E6F8F2; color: var(--verde); }
-  .badge-financeira_reprovada{ background: #FFE6E6; color: var(--vermelho); }
-  .badge-convertido          { background: #E6F8F2; color: var(--verde); }
-  .badge-perdido             { background: #F4F4F4; color: #888; }
-  .badge-boleto              { background: #F3E6FF; color: var(--roxo); }
-  .badge-cartao              { background: #E6F8F2; color: var(--verde); }
-  .badge-assistencia         { background: #EEF6FF; color: var(--azul); }
+.search-wrap{position:relative;margin-left:auto;}
+.search-wrap svg{position:absolute;left:.65rem;top:50%;transform:translateY(-50%);color:var(--muted);pointer-events:none;}
+.search-input{
+  background:var(--surface2);border:1px solid var(--border);border-radius:6px;
+  padding:.4rem .75rem .4rem 2.2rem;font-size:.83rem;color:var(--text);width:200px;
+  transition:border-color .15s,width .2s;
+}
+.search-input:focus{outline:none;border-color:var(--red);width:260px;}
+.search-input::placeholder{color:var(--muted2);}
 
-  .doc-check { color: var(--verde); font-weight: 700; }
-  .doc-x     { color: #CCC; }
-  .text-muted { color: var(--cinza-texto); }
-  .last-msg-warn { color: var(--vermelho); font-weight: 600; }
+.btn-icon{
+  background:var(--surface2);border:1px solid var(--border);color:var(--muted);
+  border-radius:6px;padding:.4rem .6rem;cursor:pointer;display:flex;align-items:center;
+  transition:all .15s;
+}
+.btn-icon:hover{color:var(--text);border-color:var(--border-h);}
 
-  /* Modal */
-  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:100; justify-content:center; align-items:center; }
-  .modal-overlay.open { display:flex; }
-  .modal { background:var(--branco); border-radius:12px; padding:2rem; width:100%; max-width:520px; position:relative; max-height:90vh; overflow-y:auto; }
-  .modal h2 { font-size:1.1rem; margin-bottom:1.2rem; }
-  .modal label { display:block; font-size:.8rem; color:var(--cinza-texto); margin-bottom:4px; margin-top:1rem; text-transform:uppercase; letter-spacing:.04em; }
-  .modal input, .modal select, .modal textarea {
-    width:100%; padding:.5rem .75rem; border:1px solid var(--cinza-borda); border-radius:6px;
-    font-size:.875rem; font-family:inherit;
-  }
-  .modal textarea { resize:vertical; min-height:80px; }
-  .modal .actions { display:flex; gap:.75rem; margin-top:1.5rem; justify-content:flex-end; }
-  .close-btn { position:absolute; top:1rem; right:1rem; background:none; border:none; font-size:1.3rem; cursor:pointer; color:var(--cinza-texto); }
-  .modal-row-2 { display:grid; grid-template-columns:1fr 1fr; gap:.75rem; }
+/* ── Table ── */
+.table-wrap{
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  overflow-x:auto;
+}
+table{width:100%;border-collapse:collapse;min-width:920px;}
+thead tr{border-bottom:1px solid var(--red);}
+th{
+  padding:.8rem 1rem;text-align:left;font-size:.7rem;text-transform:uppercase;
+  letter-spacing:.07em;color:var(--muted);font-weight:700;background:var(--surface2);
+  white-space:nowrap;
+}
+td{
+  padding:.75rem 1rem;border-bottom:1px solid var(--border);
+  font-size:.83rem;vertical-align:middle;color:var(--text);
+  transition:background .1s;
+}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(255,255,255,.025);}
 
-  .empty { text-align:center; padding:3rem; color:var(--cinza-texto); }
+.phone-cell{font-family:monospace;font-size:.82rem;color:var(--text);}
+.id-cell{color:var(--muted);font-size:.75rem;}
+
+/* ── Badges ── */
+.badge{
+  display:inline-block;padding:2px 10px;border-radius:20px;
+  font-size:.7rem;font-weight:700;white-space:nowrap;letter-spacing:.02em;
+}
+.badge-novo                {background:rgba(74,158,224,.15);color:var(--blue);border:1px solid rgba(74,158,224,.3);}
+.badge-em_analise          {background:rgba(212,134,10,.15);color:var(--yellow);border:1px solid rgba(212,134,10,.3);}
+.badge-aguardando_financeira{background:rgba(155,111,212,.15);color:var(--purple);border:1px solid rgba(155,111,212,.3);}
+.badge-financeira_aprovada {background:rgba(29,158,117,.15);color:var(--green);border:1px solid rgba(29,158,117,.3);}
+.badge-financeira_reprovada{background:rgba(224,32,32,.15);color:var(--red);border:1px solid rgba(224,32,32,.3);}
+.badge-convertido          {background:rgba(29,158,117,.15);color:var(--green);border:1px solid rgba(29,158,117,.3);}
+.badge-perdido             {background:rgba(100,100,100,.15);color:var(--muted);border:1px solid rgba(100,100,100,.3);}
+.badge-boleto              {background:rgba(155,111,212,.15);color:var(--purple);border:1px solid rgba(155,111,212,.3);}
+.badge-cartao              {background:rgba(29,158,117,.15);color:var(--green);border:1px solid rgba(29,158,117,.3);}
+.badge-assistencia         {background:rgba(74,158,224,.15);color:var(--blue);border:1px solid rgba(74,158,224,.3);}
+
+.doc-ok{color:var(--green);font-size:.75rem;font-weight:700;}
+.doc-no{color:var(--border-h);font-size:.75rem;}
+.warn{color:var(--red);font-weight:600;}
+
+/* ── Botão editar ── */
+.btn-edit{
+  display:inline-flex;align-items:center;gap:.35rem;
+  background:transparent;border:1px solid var(--border);color:var(--muted);
+  border-radius:6px;padding:.3rem .7rem;font-size:.75rem;cursor:pointer;
+  transition:all .15s;
+}
+.btn-edit:hover{border-color:var(--red);color:var(--red);background:rgba(224,32,32,.07);}
+
+.empty{
+  text-align:center;padding:4rem;color:var(--muted);
+  display:flex;flex-direction:column;align-items:center;gap:1rem;
+}
+.empty svg{opacity:.3;}
+
+/* ── Modal ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;justify-content:center;align-items:center;backdrop-filter:blur(4px);}
+.overlay.open{display:flex;}
+.modal{
+  background:var(--surface);border:1px solid var(--border);border-radius:14px;
+  padding:2rem;width:100%;max-width:520px;position:relative;max-height:90vh;overflow-y:auto;
+  box-shadow:0 20px 60px rgba(0,0,0,.6),0 0 0 1px rgba(224,32,32,.1);
+}
+.modal h2{font-size:1rem;font-weight:700;margin-bottom:1.5rem;color:var(--text);}
+.modal label{
+  display:block;font-size:.7rem;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;margin-top:1rem;
+}
+.modal label:first-of-type{margin-top:0;}
+.modal input,.modal select,.modal textarea{
+  width:100%;padding:.55rem .75rem;
+  background:var(--surface2);border:1px solid var(--border);border-radius:6px;
+  font-size:.875rem;font-family:inherit;color:var(--text);
+  transition:border-color .15s;
+}
+.modal input:focus,.modal select,.modal textarea:focus{outline:none;border-color:var(--red);}
+.modal input:disabled{opacity:.5;cursor:not-allowed;}
+.modal select option{background:var(--surface2);}
+.modal textarea{resize:vertical;min-height:80px;}
+.m-row2{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;}
+.m-actions{display:flex;gap:.75rem;margin-top:1.5rem;justify-content:flex-end;}
+.close-btn{position:absolute;top:1rem;right:1rem;background:none;border:none;color:var(--muted);cursor:pointer;padding:.25rem;border-radius:4px;transition:color .15s;}
+.close-btn:hover{color:var(--text);}
+.btn{padding:.55rem 1.25rem;border-radius:7px;font-size:.875rem;font-weight:700;cursor:pointer;border:none;transition:all .15s;display:inline-flex;align-items:center;gap:.4rem;}
+.btn-red{background:var(--red-g);color:#FFF;}
+.btn-red:hover{box-shadow:0 4px 20px var(--red-glow);transform:translateY(-1px);}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);}
+.btn-ghost:hover{color:var(--text);border-color:var(--border-h);}
 </style>
 </head>
 <body>
 
 <header>
   <div class="logo">{{ store_name }}</div>
+  <div class="wa-badge">
+    <span class="dot" id="waDot"></span>
+    <span id="waLabel">WhatsApp</span>
+  </div>
   <nav>
-    <span class="status-dot" id="statusDot" title="Status WhatsApp"></span>
     <a href="/" class="active">CRM</a>
     <a href="/config">Configurações</a>
   </nav>
@@ -103,62 +218,74 @@
 
   <!-- STATS -->
   <div class="stats">
-    <div class="stat-card vermelho">
-      <div class="num">{{ stats.total }}</div>
-      <div class="label">Total de Leads</div>
+    <div class="scard red">
+      <div class="n">{{ stats.total }}</div>
+      <div class="l">Total de Leads</div>
     </div>
-    <div class="stat-card azul">
-      <div class="num">{{ stats.novo }}</div>
-      <div class="label">Novos</div>
+    <div class="scard blue">
+      <div class="n">{{ stats.novo }}</div>
+      <div class="l">Novos</div>
     </div>
-    <div class="stat-card amarelo">
-      <div class="num">{{ stats.em_analise }}</div>
-      <div class="label">Em Análise</div>
+    <div class="scard yellow">
+      <div class="n">{{ stats.em_analise }}</div>
+      <div class="l">Em Análise</div>
     </div>
-    <div class="stat-card verde">
-      <div class="num">{{ stats.convertido }}</div>
-      <div class="label">Convertidos</div>
+    <div class="scard green">
+      <div class="n">{{ stats.convertido }}</div>
+      <div class="l">Convertidos</div>
     </div>
-    <div class="stat-card">
-      <div class="num">{{ stats.boleto }}</div>
-      <div class="label">Boleto</div>
+    <div class="scard">
+      <div class="n">{{ stats.perdido }}</div>
+      <div class="l">Perdidos</div>
     </div>
-    <div class="stat-card">
-      <div class="num">{{ stats.cartao }}</div>
-      <div class="label">Cartão/À vista</div>
+    <div class="scard purple">
+      <div class="n">{{ stats.boleto }}</div>
+      <div class="l">Boleto</div>
     </div>
-    <div class="stat-card">
-      <div class="num">{{ stats.assistencia }}</div>
-      <div class="label">Assistência</div>
+    <div class="scard blue">
+      <div class="n">{{ stats.assistencia }}</div>
+      <div class="l">Assistência Téc.</div>
     </div>
   </div>
 
-  <!-- FILTROS -->
-  <div class="filtros">
-    <select id="filtroStatus" onchange="filtrar()">
-      <option value="">Todos os status</option>
-      <option value="novo">Novo</option>
-      <option value="em_analise">Em análise</option>
-      <option value="aguardando_financeira">Aguard. Financeira</option>
-      <option value="financeira_aprovada">Financeira Aprovada</option>
-      <option value="financeira_reprovada">Financeira Reprovada</option>
-      <option value="convertido">Convertido</option>
-      <option value="perdido">Perdido</option>
-    </select>
-    <select id="filtroPayment" onchange="filtrar()">
-      <option value="">Todas as formas</option>
-      <option value="boleto">Boleto</option>
-      <option value="cartao_avista">Cartão / À vista</option>
-      <option value="assistencia">Assistência</option>
-    </select>
-    <input type="text" id="filtroPhone" oninput="filtrar()" placeholder="Buscar por telefone..." style="max-width:200px;">
-    <button class="btn btn-ghost" onclick="location.reload()">↻ Atualizar</button>
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <!-- Status pills -->
+    <button class="pill active" onclick="setPill(this,'status','')" data-group="status" data-val="">Todos</button>
+    <button class="pill" onclick="setPill(this,'status','novo')" data-group="status" data-val="novo">
+      <i data-lucide="user-plus" style="width:13px;height:13px;"></i> Novos
+    </button>
+    <button class="pill" onclick="setPill(this,'status','em_analise')" data-group="status" data-val="em_analise">Em análise</button>
+    <button class="pill" onclick="setPill(this,'status','convertido')" data-group="status" data-val="convertido">
+      <i data-lucide="check-circle" style="width:13px;height:13px;"></i> Convertidos
+    </button>
+    <button class="pill" onclick="setPill(this,'status','perdido')" data-group="status" data-val="perdido">Perdidos</button>
+
+    <div class="toolbar-sep"></div>
+
+    <!-- Payment pills -->
+    <button class="pill" onclick="setPill(this,'payment','')" data-group="payment" data-val="">
+      <i data-lucide="layers" style="width:13px;height:13px;"></i> Todos
+    </button>
+    <button class="pill" onclick="setPill(this,'payment','boleto')" data-group="payment" data-val="boleto">Boleto</button>
+    <button class="pill" onclick="setPill(this,'payment','cartao_avista')" data-group="payment" data-val="cartao_avista">Cartão</button>
+    <button class="pill pill-assist" onclick="setPill(this,'payment','assistencia')" data-group="payment" data-val="assistencia">
+      <i data-lucide="wrench" style="width:13px;height:13px;"></i> Assistência Técnica
+    </button>
+
+    <div class="search-wrap">
+      <i data-lucide="search" style="width:14px;height:14px;"></i>
+      <input class="search-input" id="searchInput" oninput="filtrar()" placeholder="Buscar por telefone ou nome...">
+    </div>
+    <button class="btn-icon" onclick="location.reload()" title="Atualizar">
+      <i data-lucide="refresh-cw" style="width:15px;height:15px;"></i>
+    </button>
   </div>
 
-  <!-- TABELA -->
-  <div class="tabela-wrap">
+  <!-- TABLE -->
+  <div class="table-wrap">
     {% if leads %}
-    <table id="tabelaLeads">
+    <table id="tbl">
       <thead>
         <tr>
           <th>#</th>
@@ -169,72 +296,60 @@
           <th>Status</th>
           <th>Atribuído</th>
           <th>Última msg</th>
-          <th>Ações</th>
+          <th></th>
         </tr>
       </thead>
       <tbody>
         {% for lead in leads %}
         {% set mins_ago = ((now - lead.last_message_at).total_seconds() / 60)|int if lead.last_message_at else -1 %}
-        <tr data-status="{{ lead.status }}" data-payment="{{ lead.payment_type or '' }}" data-phone="{{ lead.phone }}">
-          <td class="text-muted">{{ lead.id }}</td>
-          <td><strong>{{ lead.phone }}</strong></td>
-          <td>{{ lead.name or '—' }}</td>
+        <tr data-status="{{ lead.status }}" data-payment="{{ lead.payment_type or '' }}" data-search="{{ lead.phone }}{{ lead.name or '' }}">
+          <td class="id-cell">{{ lead.id }}</td>
+          <td class="phone-cell">{{ lead.phone }}</td>
+          <td style="color:{% if lead.name %}var(--text){% else %}var(--muted2){% endif %}">{{ lead.name or '—' }}</td>
           <td>
             {% if lead.payment_type == 'boleto' %}
               <span class="badge badge-boleto">Boleto</span>
             {% elif lead.payment_type == 'cartao_avista' %}
-              <span class="badge badge-cartao">Cartão/À vista</span>
+              <span class="badge badge-cartao">Cartão</span>
             {% elif lead.payment_type == 'assistencia' %}
               <span class="badge badge-assistencia">Assistência</span>
             {% else %}
-              <span class="text-muted">—</span>
+              <span style="color:var(--muted2)">—</span>
             {% endif %}
           </td>
-          <td style="font-size:.8rem;">
-            {% if lead.doc_rg  %}<span class="doc-check">RG✓</span>{% else %}<span class="doc-x">RG</span>{% endif %}
-            {% if lead.doc_cpf %}<span class="doc-check"> CPF✓</span>{% else %}<span class="doc-x"> CPF</span>{% endif %}
-            {% if lead.doc_luz %}<span class="doc-check"> Luz✓</span>{% else %}<span class="doc-x"> Luz</span>{% endif %}
+          <td>
+            <span class="{% if lead.doc_rg %}doc-ok{% else %}doc-no{% endif %}">RG</span>
+            <span class="{% if lead.doc_cpf %}doc-ok{% else %}doc-no{% endif %}"> CPF</span>
+            <span class="{% if lead.doc_luz %}doc-ok{% else %}doc-no{% endif %}"> Luz</span>
           </td>
           <td>
             <span class="badge badge-{{ lead.status }}">
               {% if lead.status == 'novo' %}Novo
               {% elif lead.status == 'em_analise' %}Em análise
-              {% elif lead.status == 'aguardando_financeira' %}Aguard. Financeira
-              {% elif lead.status == 'financeira_aprovada' %}Fin. Aprovada ✓
-              {% elif lead.status == 'financeira_reprovada' %}Fin. Reprovada ✗
+              {% elif lead.status == 'aguardando_financeira' %}Aguard. Fin.
+              {% elif lead.status == 'financeira_aprovada' %}Fin. Aprovada
+              {% elif lead.status == 'financeira_reprovada' %}Fin. Reprovada
               {% elif lead.status == 'convertido' %}Convertido
               {% elif lead.status == 'perdido' %}Perdido
               {% else %}{{ lead.status }}{% endif %}
             </span>
-            {% if lead.financeira %}
-              <br><small class="text-muted">{{ lead.financeira }}</small>
-            {% endif %}
+            {% if lead.financeira %}<br><small style="color:var(--muted);font-size:.7rem;">{{ lead.financeira }}</small>{% endif %}
           </td>
-          <td class="text-muted" style="font-size:.82rem;">{{ lead.assigned_to or '—' }}</td>
-          <td style="font-size:.8rem;">
+          <td style="color:var(--muted);font-size:.8rem;">{{ lead.assigned_to or '—' }}</td>
+          <td style="font-size:.78rem;">
             {% if lead.last_message_at %}
               {% if mins_ago > 10 and lead.status == 'em_analise' %}
-                <span class="last-msg-warn" title="{{ lead.last_message_at.strftime('%d/%m %H:%M') }}">{{ mins_ago }}min atrás ⚠️</span>
+                <span class="warn" title="{{ lead.last_message_at.strftime('%d/%m %H:%M') }}">{{ mins_ago }}min — aguardando</span>
               {% else %}
-                <span class="text-muted">{{ lead.last_message_at.strftime('%d/%m %H:%M') }}</span>
+                <span style="color:var(--muted)">{{ lead.last_message_at.strftime('%d/%m %H:%M') }}</span>
               {% endif %}
             {% else %}
-              <span class="text-muted">—</span>
+              <span style="color:var(--muted2)">—</span>
             {% endif %}
           </td>
           <td>
-            <button class="btn btn-ghost" style="padding:.3rem .7rem;font-size:.8rem;"
-              onclick="abrirModal(
-                {{ lead.id }},
-                '{{ lead.phone }}',
-                '{{ lead.name or '' }}',
-                '{{ lead.status }}',
-                '{{ lead.assigned_to or '' }}',
-                '{{ lead.financeira or '' }}',
-                '{{ lead.payment_type or '' }}',
-                '{{ lead.notes or '' }}'
-              )">
-              Editar
+            <button class="btn-edit" onclick="abrirModal({{ lead.id }},'{{ lead.phone }}','{{ lead.name or '' }}','{{ lead.status }}','{{ lead.assigned_to or '' }}','{{ lead.financeira or '' }}','{{ lead.payment_type or '' }}','{{ (lead.notes or '')|replace("'","&#39;") }}')">
+              <i data-lucide="pencil" style="width:12px;height:12px;"></i> Editar
             </button>
           </td>
         </tr>
@@ -243,8 +358,8 @@
     </table>
     {% else %}
     <div class="empty">
-      <div style="font-size:2rem;margin-bottom:.5rem;">📭</div>
-      Nenhum lead ainda. Quando o bot qualificar o primeiro cliente, ele aparece aqui.
+      <i data-lucide="inbox" style="width:48px;height:48px;"></i>
+      <div>Nenhum lead ainda.<br><small>Quando o bot qualificar o primeiro cliente, ele aparece aqui.</small></div>
     </div>
     {% endif %}
   </div>
@@ -252,137 +367,134 @@
 </main>
 
 <!-- MODAL EDIÇÃO -->
-<div class="modal-overlay" id="modal">
-  <div class="modal">
-    <button class="close-btn" onclick="fecharModal()">×</button>
-    <h2>Editar Lead</h2>
-    <input type="hidden" id="editId">
+<div class="overlay" id="modal">
+<div class="modal">
+  <button class="close-btn" onclick="fecharModal()"><i data-lucide="x" style="width:16px;height:16px;"></i></button>
+  <h2>Editar Lead</h2>
+  <input type="hidden" id="editId">
 
-    <label>Telefone</label>
-    <input type="text" id="editPhone" disabled style="background:#F4F4F4;">
+  <label>Telefone</label>
+  <input type="text" id="editPhone" disabled>
 
-    <div class="modal-row-2">
-      <div>
-        <label>Nome do cliente</label>
-        <input type="text" id="editName" placeholder="Nome completo">
-      </div>
-      <div>
-        <label>Atribuído a</label>
-        <input type="text" id="editAssigned" placeholder="Nome do atendente">
-      </div>
+  <div class="m-row2">
+    <div>
+      <label>Nome do cliente</label>
+      <input type="text" id="editName" placeholder="Nome completo">
     </div>
-
-    <div class="modal-row-2">
-      <div>
-        <label>Status</label>
-        <select id="editStatus">
-          <option value="novo">Novo</option>
-          <option value="em_analise">Em análise</option>
-          <option value="aguardando_financeira">Aguardando Financeira</option>
-          <option value="financeira_aprovada">Financeira Aprovada ✓</option>
-          <option value="financeira_reprovada">Financeira Reprovada ✗</option>
-          <option value="convertido">Convertido</option>
-          <option value="perdido">Perdido</option>
-        </select>
-      </div>
-      <div>
-        <label>Financeira</label>
-        <select id="editFinanceira">
-          <option value="">— Nenhuma —</option>
-          {% for fin in financeiras %}
-          <option value="{{ fin }}">{{ fin }}</option>
-          {% endfor %}
-        </select>
-      </div>
-    </div>
-
-    <label>Observações</label>
-    <textarea id="editNotes" placeholder="Anotações sobre o lead..."></textarea>
-
-    <div class="actions">
-      <button class="btn btn-ghost" onclick="fecharModal()">Cancelar</button>
-      <button class="btn btn-primary" onclick="salvarLead()">Salvar</button>
+    <div>
+      <label>Atribuído a</label>
+      <input type="text" id="editAssigned" placeholder="Atendente">
     </div>
   </div>
+
+  <div class="m-row2">
+    <div>
+      <label>Status</label>
+      <select id="editStatus">
+        <option value="novo">Novo</option>
+        <option value="em_analise">Em análise</option>
+        <option value="aguardando_financeira">Aguardando Financeira</option>
+        <option value="financeira_aprovada">Financeira Aprovada</option>
+        <option value="financeira_reprovada">Financeira Reprovada</option>
+        <option value="convertido">Convertido</option>
+        <option value="perdido">Perdido</option>
+      </select>
+    </div>
+    <div>
+      <label>Financeira</label>
+      <select id="editFinanceira">
+        <option value="">— Nenhuma —</option>
+        {% for fin in financeiras %}
+        <option value="{{ fin }}">{{ fin }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  <label>Observações</label>
+  <textarea id="editNotes" placeholder="Anotações sobre o lead..."></textarea>
+
+  <div class="m-actions">
+    <button class="btn btn-ghost" onclick="fecharModal()">Cancelar</button>
+    <button class="btn btn-red" onclick="salvarLead()">
+      <i data-lucide="save" style="width:14px;height:14px;"></i> Salvar
+    </button>
+  </div>
+</div>
 </div>
 
 <script>
-// ─── Injetar variáveis do Jinja no JS ────────────────────────
-const FINANCEIRAS = [{% for f in financeiras %}"{{ f }}"{% if not loop.last %},{% endif %}{% endfor %}];
+lucide.createIcons();
 
-// ─── Modal ────────────────────────────────────────────────────
+// ─── Status WhatsApp ─────────────────────────────────────────
+function checkWA() {
+  fetch('/api/whatsapp/status').then(r => r.json()).then(d => {
+    const dot   = document.getElementById('waDot');
+    const label = document.getElementById('waLabel');
+    dot.className = 'dot ' + (d.connected ? 'connected' : 'disconnected');
+    label.textContent = d.connected ? 'Conectado' : 'Desconectado';
+  }).catch(() => {});
+}
+checkWA(); setInterval(checkWA, 15000);
+
+// ─── Filtros (pills) ─────────────────────────────────────────
+let activeStatus = '', activePayment = '';
+
+function setPill(btn, group, val) {
+  document.querySelectorAll(`.pill[data-group="${group}"]`).forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  if (group === 'status')  activeStatus  = val;
+  if (group === 'payment') activePayment = val;
+  filtrar();
+}
+
+function filtrar() {
+  const q = (document.getElementById('searchInput').value || '').toLowerCase();
+  document.querySelectorAll('#tbl tbody tr').forEach(tr => {
+    const okS = !activeStatus  || tr.dataset.status  === activeStatus;
+    const okP = !activePayment || tr.dataset.payment === activePayment;
+    const okQ = !q || tr.dataset.search.toLowerCase().includes(q);
+    tr.style.display = (okS && okP && okQ) ? '' : 'none';
+  });
+}
+
+// ─── Modal ───────────────────────────────────────────────────
 function abrirModal(id, phone, name, status, assigned, financeira, payment, notes) {
-  document.getElementById('editId').value        = id;
-  document.getElementById('editPhone').value     = phone;
-  document.getElementById('editName').value      = name;
-  document.getElementById('editStatus').value    = status;
-  document.getElementById('editAssigned').value  = assigned;
-  document.getElementById('editNotes').value     = notes;
-
-  const selFin = document.getElementById('editFinanceira');
-  selFin.value = financeira;
-  if (selFin.value !== financeira && financeira) {
-    const opt = document.createElement('option');
-    opt.value = financeira; opt.textContent = financeira;
-    selFin.appendChild(opt); selFin.value = financeira;
+  document.getElementById('editId').value       = id;
+  document.getElementById('editPhone').value    = phone;
+  document.getElementById('editName').value     = name;
+  document.getElementById('editStatus').value   = status;
+  document.getElementById('editAssigned').value = assigned;
+  document.getElementById('editNotes').value    = notes;
+  const s = document.getElementById('editFinanceira');
+  s.value = financeira;
+  if (s.value !== financeira && financeira) {
+    const o = document.createElement('option');
+    o.value = financeira; o.textContent = financeira;
+    s.appendChild(o); s.value = financeira;
   }
-
   document.getElementById('modal').classList.add('open');
+  lucide.createIcons();
 }
-
-function fecharModal() {
-  document.getElementById('modal').classList.remove('open');
-}
+function fecharModal() { document.getElementById('modal').classList.remove('open'); }
+document.getElementById('modal').addEventListener('click', e => { if (e.target === document.getElementById('modal')) fecharModal(); });
 
 async function salvarLead() {
   const id = document.getElementById('editId').value;
-  const payload = {
-    name:        document.getElementById('editName').value,
-    status:      document.getElementById('editStatus').value,
-    assigned_to: document.getElementById('editAssigned').value,
-    financeira:  document.getElementById('editFinanceira').value,
-    notes:       document.getElementById('editNotes').value,
-  };
   await fetch(`/api/leads/${id}`, {
     method: 'PATCH',
     headers: {'Content-Type':'application/json'},
-    body: JSON.stringify(payload),
+    body: JSON.stringify({
+      name:        document.getElementById('editName').value,
+      status:      document.getElementById('editStatus').value,
+      assigned_to: document.getElementById('editAssigned').value,
+      financeira:  document.getElementById('editFinanceira').value,
+      notes:       document.getElementById('editNotes').value,
+    }),
   });
-  fecharModal();
-  location.reload();
+  fecharModal(); location.reload();
 }
 
-// ─── Filtros ──────────────────────────────────────────────────
-function filtrar() {
-  const status  = document.getElementById('filtroStatus').value;
-  const payment = document.getElementById('filtroPayment').value;
-  const phone   = document.getElementById('filtroPhone').value.toLowerCase();
-
-  document.querySelectorAll('#tabelaLeads tbody tr').forEach(tr => {
-    const okStatus  = !status  || tr.dataset.status  === status;
-    const okPayment = !payment || tr.dataset.payment === payment;
-    const okPhone   = !phone   || tr.dataset.phone.includes(phone);
-    tr.style.display = (okStatus && okPayment && okPhone) ? '' : 'none';
-  });
-}
-
-// ─── Status WhatsApp ──────────────────────────────────────────
-function checkWAStatus() {
-  const dot = document.getElementById('statusDot');
-  fetch('/api/whatsapp/status')
-    .then(r => r.json())
-    .then(d => {
-      dot.className = 'status-dot ' + (d.connected ? 'connected' : 'disconnected');
-      dot.title     = d.connected
-        ? `WhatsApp conectado (${d.state})`
-        : `WhatsApp desconectado — ${d.detail || d.state}`;
-    })
-    .catch(() => { dot.className = 'status-dot disconnected'; dot.title = 'Erro ao verificar'; });
-}
-checkWAStatus();
-setInterval(checkWAStatus, 15000);
-
-// Auto-refresh a cada 60s
 setTimeout(() => location.reload(), 60000);
 </script>
 </body>
