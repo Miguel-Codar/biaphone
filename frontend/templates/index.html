@@ -198,6 +198,28 @@ tr:hover td{background:rgba(255,255,255,.025);}
 .btn-red:hover{box-shadow:0 4px 20px var(--red-glow);transform:translateY(-1px);}
 .btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);}
 .btn-ghost:hover{color:var(--text);border-color:var(--border-h);}
+
+/* ── Chat Panel ── */
+.chat-panel{position:fixed;right:-430px;top:0;width:420px;height:100vh;background:var(--surface);border-left:1px solid var(--border);display:flex;flex-direction:column;z-index:200;transition:right .3s cubic-bezier(.4,0,.2,1);box-shadow:-8px 0 32px rgba(0,0,0,.5);}
+.chat-panel.open{right:0;}
+.chat-header{padding:.9rem 1.1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.75rem;flex-shrink:0;}
+.chat-title .cname{font-weight:700;font-size:.95rem;}
+.chat-title .cphone{font-size:.72rem;color:var(--muted);margin-top:.1rem;}
+.chat-msgs{flex:1;overflow-y:auto;padding:.85rem;display:flex;flex-direction:column;gap:.5rem;}
+.msg-wrap{display:flex;flex-direction:column;}
+.msg-wrap.right{align-items:flex-end;}
+.msg-bubble{max-width:82%;padding:.55rem .8rem;border-radius:12px;font-size:.82rem;line-height:1.5;word-break:break-word;white-space:pre-wrap;}
+.msg-bubble.client{background:#252525;border-bottom-left-radius:3px;}
+.msg-bubble.bot{background:rgba(224,32,32,.15);border:1px solid rgba(224,32,32,.2);border-bottom-right-radius:3px;}
+.msg-bubble.atendente{background:rgba(29,158,117,.15);border:1px solid rgba(29,158,117,.25);border-bottom-right-radius:3px;}
+.msg-meta{font-size:.65rem;color:var(--muted);margin-top:.2rem;padding:0 .2rem;}
+.chat-footer{padding:.7rem .85rem;border-top:1px solid var(--border);display:flex;gap:.5rem;flex-shrink:0;}
+.chat-input{flex:1;background:#1E1E1E;border:1px solid var(--border);border-radius:8px;color:var(--text);padding:.55rem .8rem;font-size:.83rem;resize:none;min-height:38px;max-height:100px;outline:none;font-family:inherit;}
+.chat-input:focus{border-color:var(--red);}
+.btn-send{background:var(--red-g);color:#fff;border:none;border-radius:8px;padding:.55rem .9rem;cursor:pointer;transition:opacity .15s;display:flex;align-items:center;}
+.btn-send:hover{opacity:.85;}
+.btn-chat{padding:.3rem .65rem;border-radius:6px;font-size:.75rem;cursor:pointer;border:1px solid rgba(74,158,224,.3);background:rgba(74,158,224,.1);color:var(--blue);display:inline-flex;align-items:center;gap:.3rem;transition:all .15s;}
+.btn-chat:hover{background:rgba(74,158,224,.2);}
 </style>
 </head>
 <body>
@@ -347,9 +369,12 @@ tr:hover td{background:rgba(255,255,255,.025);}
               <span style="color:var(--muted2)">—</span>
             {% endif %}
           </td>
-          <td>
+          <td style="display:flex;gap:.4rem;align-items:center;">
             <button class="btn-edit" onclick="abrirModal({{ lead.id }},'{{ lead.phone }}','{{ lead.name or '' }}','{{ lead.status }}','{{ lead.assigned_to or '' }}','{{ lead.financeira or '' }}','{{ lead.payment_type or '' }}','{{ (lead.notes or '')|replace("'","&#39;") }}')">
               <i data-lucide="pencil" style="width:12px;height:12px;"></i> Editar
+            </button>
+            <button class="btn-chat" onclick="abrirChat('{{ lead.phone }}','{{ lead.name or lead.phone }}')">
+              <i data-lucide="message-circle" style="width:12px;height:12px;"></i> Chat
             </button>
           </td>
         </tr>
@@ -365,6 +390,27 @@ tr:hover td{background:rgba(255,255,255,.025);}
   </div>
 
 </main>
+
+<!-- CHAT PANEL -->
+<div class="chat-panel" id="chatPanel">
+  <div class="chat-header">
+    <div class="chat-title" style="flex:1;">
+      <div class="cname" id="chatName">—</div>
+      <div class="cphone" id="chatPhone"></div>
+    </div>
+    <button class="btn-icon" onclick="fecharChat()" title="Fechar">
+      <i data-lucide="x" style="width:16px;height:16px;"></i>
+    </button>
+  </div>
+  <div class="chat-msgs" id="chatMsgs"></div>
+  <div class="chat-footer">
+    <textarea class="chat-input" id="chatInput" placeholder="Digite uma mensagem..." rows="1"
+      onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();enviarMsg();}"></textarea>
+    <button class="btn-send" onclick="enviarMsg()">
+      <i data-lucide="send" style="width:15px;height:15px;"></i>
+    </button>
+  </div>
+</div>
 
 <!-- MODAL EDIÇÃO -->
 <div class="overlay" id="modal">
@@ -496,6 +542,70 @@ async function salvarLead() {
 }
 
 setTimeout(() => location.reload(), 60000);
+
+// ─── Chat ────────────────────────────────────────────────────
+let _chatPhone = null, _chatInterval = null, _lastCount = 0;
+
+function abrirChat(phone, name) {
+  _chatPhone = phone;
+  document.getElementById('chatName').textContent  = name || phone;
+  document.getElementById('chatPhone').textContent = phone;
+  document.getElementById('chatMsgs').innerHTML    = '<div style="color:var(--muted);font-size:.8rem;text-align:center;margin-top:2rem;">Carregando...</div>';
+  document.getElementById('chatPanel').classList.add('open');
+  lucide.createIcons();
+  clearInterval(_chatInterval);
+  _lastCount = 0;
+  carregarMsgs();
+  _chatInterval = setInterval(carregarMsgs, 4000);
+}
+
+function fecharChat() {
+  document.getElementById('chatPanel').classList.remove('open');
+  clearInterval(_chatInterval);
+  _chatPhone = null;
+}
+
+async function carregarMsgs() {
+  if (!_chatPhone) return;
+  try {
+    const r = await fetch(`/api/leads/${_chatPhone}/messages`);
+    if (!r.ok) return;
+    const msgs = await r.json();
+    if (msgs.length === _lastCount) return;
+    _lastCount = msgs.length;
+    const box = document.getElementById('chatMsgs');
+    const atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
+    const senderLabel = {bot: '🤖 bot', atendente: '👤 você', client: ''};
+    box.innerHTML = msgs.length === 0
+      ? '<div style="color:var(--muted);font-size:.8rem;text-align:center;margin-top:2rem;">Sem mensagens ainda.</div>'
+      : msgs.map(m => `
+        <div class="msg-wrap ${m.sender === 'client' ? '' : 'right'}">
+          <div class="msg-bubble ${m.sender}">${m.text.replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')}</div>
+          <div class="msg-meta">${m.ts}${senderLabel[m.sender] ? ' · ' + senderLabel[m.sender] : ''}</div>
+        </div>`).join('');
+    if (atBottom || msgs.length <= 5) box.scrollTop = box.scrollHeight;
+  } catch(e) {}
+}
+
+async function enviarMsg() {
+  const input = document.getElementById('chatInput');
+  const text  = input.value.trim();
+  if (!text || !_chatPhone) return;
+  input.value = '';
+  input.style.height = '';
+  try {
+    await fetch(`/api/leads/${_chatPhone}/send`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({text})
+    });
+    _lastCount = 0;
+    await carregarMsgs();
+  } catch(e) {}
+}
+
+document.getElementById('chatInput').addEventListener('input', function() {
+  this.style.height = ''; this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+});
 </script>
 </body>
 </html>

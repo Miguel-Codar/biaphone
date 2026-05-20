@@ -18,8 +18,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from .database import create_db, get_session, engine, get_config, set_config
-from .models import Lead, Config, Document
-from .bot import process_message, DEFAULT_CUSTOM_PROMPT, send_whatsapp, _get_atendentes
+from .models import Lead, Config, Document, Message
+from .bot import process_message, DEFAULT_CUSTOM_PROMPT, send_whatsapp, _get_atendentes, save_msg
 
 
 # ─── TASK: lembrete de leads sem resposta ─────────────────────────────────────
@@ -346,6 +346,23 @@ async def delete_lead(lead_id: int, db: DBSession = Depends(get_session)):
         raise HTTPException(status_code=404, detail="Lead não encontrado")
     db.delete(lead)
     db.commit()
+    return {"ok": True}
+
+
+@app.get("/api/leads/{phone}/messages")
+async def get_messages(phone: str, db: DBSession = Depends(get_session)):
+    msgs = db.exec(select(Message).where(Message.phone == phone).order_by(Message.created_at)).all()
+    return [{"sender": m.sender, "text": m.text, "ts": m.created_at.strftime("%d/%m %H:%M")} for m in msgs]
+
+
+@app.post("/api/leads/{phone}/send")
+async def send_manual(phone: str, request: Request, db: DBSession = Depends(get_session)):
+    body = await request.json()
+    text = body.get("text", "").strip()
+    if not text:
+        raise HTTPException(400, "Mensagem vazia")
+    await send_whatsapp(phone, text, apply_delay=False)
+    save_msg(phone, text, "atendente", db)
     return {"ok": True}
 
 

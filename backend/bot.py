@@ -8,7 +8,7 @@ from typing import Optional
 import httpx
 from sqlmodel import Session as DBSession, select
 
-from .models import Session, Lead
+from .models import Session, Lead, Message
 from .database import get_config, get_documents
 
 GROQ_API_KEY       = os.getenv("GROQ_API_KEY", "")
@@ -257,6 +257,11 @@ def save_lead(lead: Lead, db: DBSession):
     db.refresh(lead)
 
 
+def save_msg(phone: str, text: str, sender: str, db: DBSession):
+    db.add(Message(phone=phone, text=text, sender=sender))
+    db.commit()
+
+
 def touch_lead_message_time(phone: str, db: DBSession, contact_name: str = ""):
     """Atualiza o timestamp da última mensagem e salva o nome do contato se ainda não tiver."""
     stmt = select(Lead).where(Lead.phone == phone)
@@ -274,6 +279,7 @@ def touch_lead_message_time(phone: str, db: DBSession, contact_name: str = ""):
 async def process_message(phone: str, message: str, msg_type: str, db: DBSession, contact_name: str = ""):
     sess = get_or_create_session(phone, db)
     touch_lead_message_time(phone, db, contact_name)
+    save_msg(phone, message, "client", db)
 
     if sess.stage == "TRANSFERIDO":
         print(f"[BOT] {phone} — sessão transferida, ignorando mensagem.")
@@ -290,6 +296,7 @@ async def process_message(phone: str, message: str, msg_type: str, db: DBSession
         reply, transferir = await _boleto_step(sess, message, is_media, db)
         push_history(sess, "assistant", reply)
         save_session(sess, db)
+        save_msg(phone, reply, "bot", db)
         await send_whatsapp_parts(phone, reply)
         if transferir:
             await _transferir(phone, sess, db)
@@ -317,6 +324,7 @@ async def process_message(phone: str, message: str, msg_type: str, db: DBSession
         sess.payment_type = "cartao_avista"
         _sync_lead(phone, sess, db)
         save_session(sess, db)
+        save_msg(phone, reply, "bot", db)
         await send_whatsapp_parts(phone, reply)
         await _transferir(phone, sess, db)
         return
@@ -326,11 +334,13 @@ async def process_message(phone: str, message: str, msg_type: str, db: DBSession
         sess.payment_type = "assistencia"
         _sync_lead(phone, sess, db)
         save_session(sess, db)
+        save_msg(phone, reply, "bot", db)
         await send_whatsapp_parts(phone, reply)
         await _transferir(phone, sess, db)
         return
 
     save_session(sess, db)
+    save_msg(phone, reply, "bot", db)
     await send_whatsapp_parts(phone, reply)
 
 
