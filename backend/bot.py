@@ -197,6 +197,7 @@ async def send_whatsapp(number: str, text: str, apply_delay: bool = True):
     async with httpx.AsyncClient(timeout=15) as client:
         r = await client.post(url, headers=headers, json=payload)
         print(f"[EVOLUTION] sendText → {r.status_code} {r.text[:200]}")
+        r.raise_for_status()
 
 
 async def send_whatsapp_parts(number: str, text: str, apply_delay: bool = True):

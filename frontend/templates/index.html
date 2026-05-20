@@ -601,13 +601,35 @@ async function enviarMsg() {
   input.value = '';
   input.style.height = '';
   try {
-    await fetch(`/api/leads/${_chatPhone}/send`, {
+    const r = await fetch(`/api/leads/${_chatPhone}/send`, {
       method: 'POST', headers: {'Content-Type':'application/json'},
       body: JSON.stringify({text})
     });
+    if (!r.ok) {
+      const d = await r.json().catch(() => ({}));
+      input.value = text;
+      chatToast(d.detail || 'Erro ao enviar mensagem.', false);
+      return;
+    }
     _lastCount = 0;
     await carregarMsgs();
-  } catch(e) {}
+  } catch(e) {
+    input.value = text;
+    chatToast('Erro de conexão ao enviar.', false);
+  }
+}
+
+function chatToast(msg, ok=true) {
+  const t = document.createElement('div');
+  t.textContent = msg;
+  Object.assign(t.style, {
+    position:'fixed', bottom:'1.5rem', left:'50%', transform:'translateX(-50%)',
+    background: ok ? 'var(--green)' : 'var(--red)', color:'#fff',
+    padding:'.6rem 1.2rem', borderRadius:'8px', fontSize:'.83rem',
+    fontWeight:'600', zIndex:'9999', boxShadow:'0 4px 20px rgba(0,0,0,.4)',
+  });
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3500);
 }
 
 document.getElementById('chatInput').addEventListener('input', function() {

@@ -65,47 +65,55 @@ async def _daily_report():
             print(f"[RELATÓRIO DIÁRIO] Erro: {e}")
 
 
+_NOTIF_THRESHOLDS = [15, 30, 60]  # minutos — notifica só nestes marcos, depois para
+
+
 async def _check_unanswered_leads():
-    """Background task: notifica atendentes sobre leads aguardando resposta."""
-    await asyncio.sleep(30)  # aguarda o app subir antes de começar
+    """Background task: notifica atendentes em 15, 30 e 60 min, depois para."""
+    await asyncio.sleep(30)
     while True:
-        await asyncio.sleep(60)  # verifica a cada minuto
+        await asyncio.sleep(60)
         try:
-            timeout_min = int(get_config("notification_timeout") or "10")
-            atendentes  = _get_atendentes()
+            atendentes = _get_atendentes()
             if not atendentes:
                 continue
 
-            cutoff        = datetime.utcnow() - timedelta(minutes=timeout_min)
-            remind_cutoff = datetime.utcnow() - timedelta(minutes=timeout_min * 2)
-
+            now = datetime.now()
             with DBSession(engine) as db:
                 leads = db.exec(select(Lead).where(Lead.status == "em_analise")).all()
                 for lead in leads:
                     if not lead.last_message_at:
                         continue
-                    if lead.last_message_at > cutoff:
-                        continue  # não passou tempo suficiente ainda
-                    if lead.notified_at and lead.notified_at > remind_cutoff:
-                        continue  # lembrete recente, evita spam
+                    wait_min = (now - lead.last_message_at).total_seconds() / 60
 
-                    wait_min  = int((datetime.utcnow() - lead.last_message_at).total_seconds() / 60)
-                    loja      = get_config("store_name") or "Top Phone"
-                    pag_map   = {"boleto": "Boleto", "cartao_avista": "Cartão/À vista", "assistencia": "Assistência"}
-                    pag       = pag_map.get(lead.payment_type or "", "—")
-                    assigned  = lead.assigned_to or "Ninguém"
+                    # Encontra o maior marco já ultrapassado mas ainda não notificado
+                    to_notify = None
+                    for threshold in sorted(_NOTIF_THRESHOLDS, reverse=True):
+                        if wait_min < threshold:
+                            continue
+                        threshold_ts = lead.last_message_at + timedelta(minutes=threshold)
+                        if not lead.notified_at or lead.notified_at < threshold_ts:
+                            to_notify = threshold
+                            break
 
+                    if not to_notify:
+                        continue
+
+                    loja    = get_config("store_name") or "Top Phone"
+                    pag_map = {"boleto": "Boleto", "cartao_avista": "Cartão/À vista", "assistencia": "Assistência"}
+                    pag     = pag_map.get(lead.payment_type or "", "—")
+                    name_str = f" ({lead.name})" if lead.name else ""
                     text = (
                         f"⚠️ *LEMBRETE — {loja}*\n\n"
-                        f"📱 Cliente *{lead.phone}* aguarda resposta há *{wait_min} min*!\n"
+                        f"📱 Cliente *{lead.phone}{name_str}* aguarda há *{int(wait_min)} min*!\n"
                         f"💳 Pagamento: {pag}\n"
-                        f"👤 Atribuído: {assigned}\n\n"
+                        f"👤 Atribuído: {lead.assigned_to or 'Ninguém'}\n\n"
                         f"Acesse o painel e assuma o atendimento."
                     )
                     for atendente in atendentes:
                         await send_whatsapp(atendente, text, apply_delay=False)
 
-                    lead.notified_at = datetime.utcnow()
+                    lead.notified_at = now
                     db.add(lead)
                 db.commit()
         except Exception as e:
@@ -381,7 +389,10 @@ async def send_manual(phone: str, request: Request, db: DBSession = Depends(get_
     text = body.get("text", "").strip()
     if not text:
         raise HTTPException(400, "Mensagem vazia")
-    await send_whatsapp(phone, text, apply_delay=False)
+    try:
+        await send_whatsapp(phone, text, apply_delay=False)
+    except Exception as e:
+        raise HTTPException(502, f"Falha ao enviar pelo WhatsApp: {e}")
     save_msg(phone, text, "atendente", db)
     lead = db.exec(select(Lead).where(Lead.phone == phone)).first()
     if lead:
