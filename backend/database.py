@@ -9,10 +9,11 @@ engine = create_engine(DATABASE_URL, echo=False, connect_args={"check_same_threa
 def create_db():
     SQLModel.metadata.create_all(engine)
     # Migração manual: adiciona colunas novas em tabelas existentes
-    _add_col("lead", "assigned_to",    "TEXT")
-    _add_col("lead", "financeira",     "TEXT")
-    _add_col("lead", "last_message_at","DATETIME")
-    _add_col("lead", "notified_at",    "DATETIME")
+    _add_col("lead", "assigned_to",          "TEXT")
+    _add_col("lead", "financeira",           "TEXT")
+    _add_col("lead", "last_message_at",      "DATETIME")
+    _add_col("lead", "notified_at",          "DATETIME")
+    _add_col("lead", "human_takeover_until", "DATETIME")
 
 
 def _add_col(table: str, column: str, col_type: str):

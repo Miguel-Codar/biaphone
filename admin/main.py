@@ -413,14 +413,37 @@ async def rebuild_restart(request: Request):
     except Exception as e:
         raise HTTPException(500, f"Build falhou: {e}")
 
+    # Recriar cada cliente com a nova imagem (restart não troca a imagem)
+    registry = load_registry()
     restarted, errors = [], []
-    for c in dc().containers.list(all=True, filters={"name": "biaphone_"}):
-        if "biaphone_admin" in c.name:
-            continue
+    for client in registry:
+        name = client["name"]
+        port = client["port"]
+        host_client_dir = HOST_CLIENTS_DIR / name
         try:
-            c.restart(timeout=10)
-            restarted.append(c.name)
+            try:
+                old = dc().containers.get(f"biaphone_{name}")
+                old.stop(timeout=10)
+                old.remove()
+            except docker_sdk.errors.NotFound:
+                pass
+            dc().containers.run(
+                image=BOT_IMAGE,
+                name=f"biaphone_{name}",
+                detach=True,
+                restart_policy={"Name": "unless-stopped"},
+                ports={"8000/tcp": port},
+                volumes={
+                    str(host_client_dir / ".env"): {"bind": "/app/.env",  "mode": "rw"},
+                    str(host_client_dir / "data"): {"bind": "/app/data",  "mode": "rw"},
+                },
+                environment={
+                    "DATABASE_URL": "sqlite:////app/data/bot.db",
+                    "TZ": "America/Sao_Paulo",
+                },
+            )
+            restarted.append(name)
         except Exception as e:
-            errors.append(f"{c.name}: {e}")
+            errors.append(f"{name}: {e}")
 
     return {"ok": not errors, "restarted": restarted, "errors": errors}
