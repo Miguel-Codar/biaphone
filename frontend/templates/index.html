@@ -398,6 +398,9 @@ tr:hover td{background:rgba(255,255,255,.025);}
       <div class="cname" id="chatName">—</div>
       <div class="cphone" id="chatPhone"></div>
     </div>
+    <div id="humanBadge" style="display:none;align-items:center;gap:.35rem;font-size:.7rem;color:var(--green);background:rgba(29,158,117,.12);border:1px solid rgba(29,158,117,.3);border-radius:20px;padding:.25rem .65rem;margin-right:.5rem;">
+      <i data-lucide="user-check" style="width:11px;height:11px;"></i> bot pausado
+    </div>
     <button class="btn-icon" onclick="fecharChat()" title="Fechar">
       <i data-lucide="x" style="width:16px;height:16px;"></i>
     </button>
@@ -570,12 +573,16 @@ async function carregarMsgs() {
   try {
     const r = await fetch(`/api/leads/${_chatPhone}/messages`);
     if (!r.ok) return;
-    const msgs = await r.json();
+    const data = await r.json();
+    const msgs = data.messages;
+    // Atualiza badge de modo humano
+    const badge = document.getElementById('humanBadge');
+    if (badge) badge.style.display = data.human_active ? 'flex' : 'none';
     if (msgs.length === _lastCount) return;
     _lastCount = msgs.length;
     const box = document.getElementById('chatMsgs');
     const atBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
-    const senderLabel = {bot: '🤖 bot', atendente: '👤 você', client: ''};
+    const senderLabel = {bot: 'bot', atendente: 'você', client: ''};
     box.innerHTML = msgs.length === 0
       ? '<div style="color:var(--muted);font-size:.8rem;text-align:center;margin-top:2rem;">Sem mensagens ainda.</div>'
       : msgs.map(m => `

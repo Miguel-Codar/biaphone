@@ -281,6 +281,11 @@ async def process_message(phone: str, message: str, msg_type: str, db: DBSession
     touch_lead_message_time(phone, db, contact_name)
     save_msg(phone, message, "client", db)
 
+    lead = get_or_create_lead(phone, db)
+    if lead.human_takeover_until and lead.human_takeover_until > datetime.now():
+        print(f"[BOT] {phone} — atendimento humano ativo, bot pausado.")
+        return
+
     if sess.stage == "TRANSFERIDO":
         print(f"[BOT] {phone} — sessão transferida, ignorando mensagem.")
         return

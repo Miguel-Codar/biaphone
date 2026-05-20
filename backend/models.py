@@ -17,8 +17,9 @@ class Lead(SQLModel, table=True):
     notes: Optional[str]         = None
     assigned_to: Optional[str]   = None          # atendente responsável
     financeira: Optional[str]    = None          # financeira utilizada no boleto
-    last_message_at: Optional[datetime] = None   # última mensagem recebida do cliente
-    notified_at: Optional[datetime]     = None   # último lembrete enviado ao atendente
+    last_message_at: Optional[datetime]      = None
+    notified_at: Optional[datetime]          = None
+    human_takeover_until: Optional[datetime] = None  # bot pausado até este momento
     created_at: datetime         = Field(default_factory=datetime.now)
     updated_at: datetime         = Field(default_factory=datetime.now)
 

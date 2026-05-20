@@ -18,7 +18,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from .database import create_db, get_session, engine, get_config, set_config
-from .models import Lead, Config, Document, Message
+from .models import Lead, Config, Document, Message, Session as ConvSession
 from .bot import process_message, DEFAULT_CUSTOM_PROMPT, send_whatsapp, _get_atendentes, save_msg
 
 
@@ -352,7 +352,27 @@ async def delete_lead(lead_id: int, db: DBSession = Depends(get_session)):
 @app.get("/api/leads/{phone}/messages")
 async def get_messages(phone: str, db: DBSession = Depends(get_session)):
     msgs = db.exec(select(Message).where(Message.phone == phone).order_by(Message.created_at)).all()
-    return [{"sender": m.sender, "text": m.text, "ts": m.created_at.strftime("%d/%m %H:%M")} for m in msgs]
+    result = [{"sender": m.sender, "text": m.text, "ts": m.created_at.strftime("%d/%m %H:%M")} for m in msgs]
+
+    # Fallback: se não há mensagens novas, carrega do histórico de sessão
+    if not result:
+        sess = db.exec(select(ConvSession).where(ConvSession.phone == phone)).first()
+        if sess:
+            try:
+                for h in json.loads(sess.history):
+                    result.append({
+                        "sender": "client" if h["role"] == "user" else "bot",
+                        "text": h["content"],
+                        "ts": "histórico",
+                    })
+            except Exception:
+                pass
+
+    lead = db.exec(select(Lead).where(Lead.phone == phone)).first()
+    human_active = bool(
+        lead and lead.human_takeover_until and lead.human_takeover_until > datetime.now()
+    )
+    return {"messages": result, "human_active": human_active}
 
 
 @app.post("/api/leads/{phone}/send")
@@ -363,6 +383,11 @@ async def send_manual(phone: str, request: Request, db: DBSession = Depends(get_
         raise HTTPException(400, "Mensagem vazia")
     await send_whatsapp(phone, text, apply_delay=False)
     save_msg(phone, text, "atendente", db)
+    lead = db.exec(select(Lead).where(Lead.phone == phone)).first()
+    if lead:
+        lead.human_takeover_until = datetime.now() + timedelta(minutes=10)
+        db.add(lead)
+        db.commit()
     return {"ok": True}
 
 
